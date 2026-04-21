@@ -1,31 +1,28 @@
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { NOTES_SHARP, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
-import type { Membership } from "@/hooks/useChurch";
 
-type Song = { id: string; title: string; artist: string | null; song_key: string; lyrics: string };
-type Props = { church: Membership; songId: string; onBack: () => void; onEdit: () => void };
+// Visor reutilizable: recibe una canción ya cargada (catálogo global o item de setlist).
+export type ViewerSong = { title: string; artist?: string | null; song_key: string; lyrics: string };
+type Props = {
+  song: ViewerSong;
+  onBack: () => void;
+  onEdit?: () => void;       // opcional, solo si el usuario puede editar
+};
 
-// Visor con transposición, auto-scroll y copiar
-export default function SongViewer({ church, songId, onBack, onEdit }: Props) {
-  const [song, setSong] = useState<Song | null>(null);
-  const [currentKey, setCurrentKey] = useState("C");
+export default function SongViewer({ song, onBack, onEdit }: Props) {
+  const [currentKey, setCurrentKey] = useState(song.song_key);
   const [scrolling, setScrolling] = useState(false);
   const scrollRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    supabase.from("songs").select("*").eq("id", songId).single().then(({ data, error }) => {
-      if (error) toast.error(error.message);
-      else { setSong(data); setCurrentKey(data.song_key); }
-    });
-  }, [songId]);
+  // Si cambia la canción, resetea el tono al original
+  useEffect(() => { setCurrentKey(song.song_key); }, [song.song_key]);
 
-  // Auto-scroll suave
+  // Auto-scroll
   useEffect(() => {
     if (!scrolling) {
       if (scrollRef.current) { window.clearInterval(scrollRef.current); scrollRef.current = null; }
@@ -37,8 +34,6 @@ export default function SongViewer({ church, songId, onBack, onEdit }: Props) {
     }, 80);
     return () => { if (scrollRef.current) window.clearInterval(scrollRef.current); };
   }, [scrolling]);
-
-  if (!song) return <p className="text-muted-foreground">Cargando...</p>;
 
   const semitones = noteIndex(currentKey) - noteIndex(song.song_key);
   const lines = renderLines(song.lyrics, semitones);
@@ -54,8 +49,6 @@ export default function SongViewer({ church, songId, onBack, onEdit }: Props) {
     toast.success("Copiado");
   };
 
-  const isAdmin = church.role === "admin";
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
@@ -64,7 +57,7 @@ export default function SongViewer({ church, songId, onBack, onEdit }: Props) {
           <h2 className="font-bold truncate">{song.title}</h2>
           {song.artist && <p className="text-sm text-muted-foreground truncate">{song.artist}</p>}
         </div>
-        {isAdmin && <Button variant="outline" size="sm" onClick={onEdit}><Pencil className="w-4 h-4" /></Button>}
+        {onEdit && <Button variant="outline" size="sm" onClick={onEdit}><Pencil className="w-4 h-4" /></Button>}
       </div>
 
       <Card className="p-3 flex flex-wrap items-center gap-2 justify-between">

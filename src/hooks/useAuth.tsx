@@ -2,16 +2,23 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-// Provee usuario y sesión a toda la app
-type Ctx = { user: User | null; session: Session | null; loading: boolean; signOut: () => Promise<void> };
-const AuthContext = createContext<Ctx>({ user: null, session: null, loading: true, signOut: async () => {} });
+// Email del Dueño global (hardcoded). Coincide con la función SQL is_global_owner.
+export const OWNER_EMAIL = "dva.lucho@gmail.com";
+
+type Ctx = {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  isOwner: boolean;
+  signOut: () => Promise<void>;
+};
+const AuthContext = createContext<Ctx>({ user: null, session: null, loading: true, isOwner: false, signOut: async () => {} });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // IMPORTANTE: registrar el listener ANTES de getSession
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setLoading(false);
@@ -24,9 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => { await supabase.auth.signOut(); };
+  const user = session?.user ?? null;
+  const isOwner = !!user?.email && user.email.toLowerCase() === OWNER_EMAIL;
 
   return (
-    <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isOwner, signOut }}>
       {children}
     </AuthContext.Provider>
   );
