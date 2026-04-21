@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { NOTES_SHARP, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
 
 // Visor reutilizable: recibe una canción ya cargada (catálogo global o item de setlist).
-export type ViewerSong = { title: string; artist?: string | null; song_key: string; lyrics: string };
+export type ViewerSong = { title: string; artist?: string | null; song_key: string; lyrics: string; contributor_name?: string | null };
 type Props = {
   song: ViewerSong;
   onBack: () => void;
@@ -89,6 +89,12 @@ export default function SongViewer({ song, onBack, onEdit }: Props) {
           ))}
         </pre>
       </Card>
+
+      {song.contributor_name !== undefined && (
+        <p className="text-xs text-muted-foreground italic text-center">
+          Colaborador: {song.contributor_name || "—"}
+        </p>
+      )}
     </div>
   );
 }
