@@ -70,6 +70,51 @@ export type Database = {
         }
         Relationships: []
       }
+      global_songs: {
+        Row: {
+          artist: string | null
+          created_at: string
+          id: string
+          lyrics: string
+          proposed_by: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          song_key: string
+          status: Database["public"]["Enums"]["song_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist?: string | null
+          created_at?: string
+          id?: string
+          lyrics: string
+          proposed_by: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          song_key?: string
+          status?: Database["public"]["Enums"]["song_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist?: string | null
+          created_at?: string
+          id?: string
+          lyrics?: string
+          proposed_by?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          song_key?: string
+          status?: Database["public"]["Enums"]["song_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -110,6 +155,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      setlist_songs: {
+        Row: {
+          added_by: string
+          artist: string | null
+          created_at: string
+          global_song_id: string | null
+          id: string
+          lyrics: string
+          position: number
+          setlist_id: string
+          song_key: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          added_by: string
+          artist?: string | null
+          created_at?: string
+          global_song_id?: string | null
+          id?: string
+          lyrics: string
+          position?: number
+          setlist_id: string
+          song_key?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          added_by?: string
+          artist?: string | null
+          created_at?: string
+          global_song_id?: string | null
+          id?: string
+          lyrics?: string
+          position?: number
+          setlist_id?: string
+          song_key?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setlist_songs_global_song_id_fkey"
+            columns: ["global_song_id"]
+            isOneToOne: false
+            referencedRelation: "global_songs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setlist_songs_setlist_id_fkey"
+            columns: ["setlist_id"]
+            isOneToOne: false
+            referencedRelation: "setlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      setlists: {
+        Row: {
+          church_id: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       songs: {
         Row: {
@@ -173,9 +302,12 @@ export type Database = {
         Args: { _church_id: string; _user_id: string }
         Returns: boolean
       }
+      is_global_owner: { Args: { _user_id: string }; Returns: boolean }
+      setlist_church_id: { Args: { _setlist_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "member"
+      song_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -304,6 +436,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "member"],
+      song_status: ["pending", "approved", "rejected"],
     },
   },
 } as const

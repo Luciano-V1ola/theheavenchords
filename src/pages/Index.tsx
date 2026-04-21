@@ -9,33 +9,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Music, Plus, LogOut, Settings } from "lucide-react";
-import SongList from "@/components/SongList";
-import SongEditor from "@/components/SongEditor";
+import { Music, Plus, LogOut, Settings, Crown } from "lucide-react";
+import GlobalCatalog, { GlobalSong } from "@/components/GlobalCatalog";
+import SetlistsView, { Setlist } from "@/components/SetlistsView";
+import SetlistDetail from "@/components/SetlistDetail";
 import SongViewer from "@/components/SongViewer";
+import OwnerReview from "@/components/OwnerReview";
 import ChurchSettings from "@/components/ChurchSettings";
+import AddToSetlistDialog from "@/components/AddToSetlistDialog";
 
-type View = "list" | "editor" | "viewer" | "settings";
+type Tab = "catalog" | "lists" | "review" | "settings";
 
 export default function Index() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, isOwner, signOut } = useAuth();
   const { memberships, current, setCurrent, refresh, loading: chLoading } = useChurch();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
 
-  const [view, setView] = useState<View>("list");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [viewingId, setViewingId] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("catalog");
+  const [openSetlist, setOpenSetlist] = useState<Setlist | null>(null);
+  const [viewingGlobal, setViewingGlobal] = useState<GlobalSong | null>(null);
+  const [addToList, setAddToList] = useState<GlobalSong | null>(null);
   const [newChurchOpen, setNewChurchOpen] = useState(false);
   const [newChurchName, setNewChurchName] = useState("");
 
-  // Redirige a /auth si no hay sesión
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
   }, [authLoading, user, navigate]);
 
-  // Si llega un token de invitación en URL ya autenticado, lo acepta
+  // Acepta token de invitación si llega en la URL
   useEffect(() => {
     const token = params.get("invite");
     if (user && token) {
@@ -62,59 +67,30 @@ export default function Index() {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Cargando...</div>;
   }
 
-  // Sin iglesia → onboarding
-  if (memberships.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <Card className="max-w-md w-full p-8 space-y-6 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mx-auto">
-            <Music className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">Bienvenido</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Crea una iglesia para empezar, o pide a un admin que te invite por email.
-            </p>
-          </div>
-          <div className="space-y-2 text-left">
-            <Label>Nombre de la iglesia</Label>
-            <Input value={newChurchName} onChange={e => setNewChurchName(e.target.value)} placeholder="Ej: Iglesia Central" />
-            <Button onClick={createChurch} className="w-full" disabled={!newChurchName.trim()}>
-              Crear iglesia
-            </Button>
-          </div>
-          <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground">
-            <LogOut className="w-4 h-4 mr-2" /> Cerrar sesión
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-muted/20">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2 flex-wrap">
           <Music className="w-5 h-5 text-primary shrink-0" />
           <h1 className="font-bold shrink-0 hidden sm:block">Acordes</h1>
+          {isOwner && <Badge variant="secondary" className="hidden sm:inline-flex"><Crown className="w-3 h-3 mr-1" /> Dueño</Badge>}
 
-          {/* Selector de iglesia */}
-          <Select value={current?.id} onValueChange={(id) => {
-            const m = memberships.find(x => x.id === id);
-            if (m) { setCurrent(m); setView("list"); }
-          }}>
-            <SelectTrigger className="max-w-[200px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {memberships.map(m => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.name} {m.role === "admin" && "👑"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {memberships.length > 0 ? (
+            <Select value={current?.id ?? ""} onValueChange={(id) => {
+              const m = memberships.find(x => x.id === id);
+              if (m) { setCurrent(m); setOpenSetlist(null); }
+            }}>
+              <SelectTrigger className="max-w-[200px]"><SelectValue placeholder="Iglesia" /></SelectTrigger>
+              <SelectContent>
+                {memberships.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.name} {m.role === "admin" && "👑"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="text-sm text-muted-foreground">Sin iglesia</span>
+          )}
 
-          {/* Crear nueva iglesia */}
           <Dialog open={newChurchOpen} onOpenChange={setNewChurchOpen}>
             <DialogTrigger asChild>
               <Button size="icon" variant="ghost" title="Nueva iglesia"><Plus className="w-4 h-4" /></Button>
@@ -128,45 +104,61 @@ export default function Index() {
           </Dialog>
 
           <div className="flex-1" />
-
-          {current?.role === "admin" && (
-            <Button size="icon" variant="ghost" onClick={() => setView("settings")} title="Ajustes de iglesia">
-              <Settings className="w-4 h-4" />
-            </Button>
-          )}
-          <Button size="icon" variant="ghost" onClick={signOut} title="Salir">
-            <LogOut className="w-4 h-4" />
-          </Button>
+          <Button size="icon" variant="ghost" onClick={signOut} title="Salir"><LogOut className="w-4 h-4" /></Button>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto p-4">
-        {!current ? (
-          <p className="text-center text-muted-foreground py-12">Selecciona una iglesia</p>
-        ) : view === "list" ? (
-          <SongList
-            church={current}
-            onView={(id) => { setViewingId(id); setView("viewer"); }}
-            onEdit={(id) => { setEditingId(id); setView("editor"); }}
-            onNew={() => { setEditingId(null); setView("editor"); }}
-          />
-        ) : view === "editor" ? (
-          <SongEditor
-            church={current}
-            songId={editingId}
-            onDone={() => setView("list")}
-          />
-        ) : view === "viewer" && viewingId ? (
-          <SongViewer
-            church={current}
-            songId={viewingId}
-            onBack={() => setView("list")}
-            onEdit={() => { setEditingId(viewingId); setView("editor"); }}
-          />
-        ) : view === "settings" ? (
-          <ChurchSettings church={current} onBack={() => setView("list")} />
-        ) : null}
+        {/* Si está viendo una canción del catálogo en pantalla completa */}
+        {viewingGlobal ? (
+          <SongViewer song={viewingGlobal} onBack={() => setViewingGlobal(null)} />
+        ) : openSetlist && current ? (
+          <SetlistDetail church={current} setlist={openSetlist} onBack={() => setOpenSetlist(null)} />
+        ) : (
+          <Tabs value={tab} onValueChange={v => setTab(v as Tab)} className="space-y-4">
+            <TabsList className="w-full flex-wrap h-auto">
+              <TabsTrigger value="catalog">Catálogo</TabsTrigger>
+              <TabsTrigger value="lists" disabled={!current}>Listas</TabsTrigger>
+              {isOwner && <TabsTrigger value="review">Revisión</TabsTrigger>}
+              {current?.role === "admin" && (
+                <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1" /> Iglesia</TabsTrigger>
+              )}
+            </TabsList>
+
+            <TabsContent value="catalog">
+              <GlobalCatalog
+                church={current}
+                onView={s => setViewingGlobal(s)}
+                onAddToSetlist={s => setAddToList(s)}
+              />
+            </TabsContent>
+
+            <TabsContent value="lists">
+              {current ? (
+                <SetlistsView church={current} onOpen={s => setOpenSetlist(s)} />
+              ) : (
+                <Card className="p-8 text-center text-muted-foreground">
+                  Necesitás pertenecer a una iglesia. Crea una con el botón ➕ o pedile a un admin que te invite.
+                </Card>
+              )}
+            </TabsContent>
+
+            {isOwner && (
+              <TabsContent value="review"><OwnerReview /></TabsContent>
+            )}
+
+            {current?.role === "admin" && (
+              <TabsContent value="settings">
+                <ChurchSettings church={current} onBack={() => setTab("catalog")} />
+              </TabsContent>
+            )}
+          </Tabs>
+        )}
       </main>
+
+      {current && (
+        <AddToSetlistDialog church={current} song={addToList} onClose={() => setAddToList(null)} />
+      )}
     </div>
   );
 }
