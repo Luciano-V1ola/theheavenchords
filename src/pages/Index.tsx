@@ -20,6 +20,7 @@ import SongViewer from "@/components/SongViewer";
 import OwnerReview from "@/components/OwnerReview";
 import ChurchSettings from "@/components/ChurchSettings";
 import AddToSetlistDialog from "@/components/AddToSetlistDialog";
+import ProfileDialog from "@/components/ProfileDialog";
 
 type Tab = "catalog" | "lists" | "review" | "settings";
 
@@ -104,6 +105,7 @@ export default function Index() {
           </Dialog>
 
           <div className="flex-1" />
+          <ProfileDialog />
           <Button size="icon" variant="ghost" onClick={signOut} title="Salir"><LogOut className="w-4 h-4" /></Button>
         </div>
       </header>

@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, Eye, ListPlus, Clock, X } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Plus, Search, Eye, ListPlus, Clock, X, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import SongFormFields, { SongFields } from "./SongFormFields";
 import type { Membership } from "@/hooks/useChurch";
@@ -15,6 +16,7 @@ import type { Membership } from "@/hooks/useChurch";
 export type GlobalSong = {
   id: string; title: string; artist: string | null; song_key: string; lyrics: string;
   status: "pending" | "approved" | "rejected"; proposed_by: string;
+  contributor_name?: string | null;
 };
 
 type Props = {
@@ -23,24 +25,47 @@ type Props = {
   onAddToSetlist: (s: GlobalSong) => void;   // abre selector de lista
 };
 
+const DRAFT_KEY = "globalCatalog.proposeDraft";
+const emptyDraft: SongFields = { title: "", artist: "", song_key: "C", lyrics: "" };
+
 export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props) {
-  const { user } = useAuth();
+  const { user, isOwner } = useAuth();
   const [songs, setSongs] = useState<GlobalSong[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [proposeOpen, setProposeOpen] = useState(false);
-  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "" });
+  const [draft, setDraft] = useState<SongFields>(() => {
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "") || emptyDraft; }
+    catch { return emptyDraft; }
+  });
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<GlobalSong | null>(null);
+  const [editDraft, setEditDraft] = useState<SongFields>(emptyDraft);
+  const [deleting, setDeleting] = useState<GlobalSong | null>(null);
+
+  // Persistir borrador automáticamente
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  }, [draft]);
 
   const load = async () => {
     setLoading(true);
-    // Trae aprobadas + las propias (pendientes/rechazadas) gracias al RLS
     const { data, error } = await supabase
       .from("global_songs")
       .select("id, title, artist, song_key, lyrics, status, proposed_by")
       .order("title");
-    if (error) toast.error(error.message);
-    else setSongs((data ?? []) as GlobalSong[]);
+    if (error) { toast.error(error.message); setLoading(false); return; }
+
+    const rows = (data ?? []) as GlobalSong[];
+    // Traer nombres de colaboradores
+    const ids = Array.from(new Set(rows.map(r => r.proposed_by)));
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles")
+        .select("user_id, display_name").in("user_id", ids);
+      const map = new Map((profs ?? []).map(p => [p.user_id, p.display_name]));
+      rows.forEach(r => { r.contributor_name = map.get(r.proposed_by) ?? null; });
+    }
+    setSongs(rows);
     setLoading(false);
   };
 
@@ -61,7 +86,8 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Propuesta enviada al Dueño para revisión");
-    setDraft({ title: "", artist: "", song_key: "C", lyrics: "" });
+    setDraft(emptyDraft);
+    localStorage.removeItem(DRAFT_KEY);
     setProposeOpen(false);
     load();
   };
@@ -70,6 +96,30 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     const { error } = await supabase.from("global_songs").delete().eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Propuesta cancelada"); load(); }
+  };
+
+  const startEdit = (s: GlobalSong) => {
+    setEditDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics });
+    setEditing(s);
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const { error } = await supabase.from("global_songs").update({
+      title: editDraft.title.trim(),
+      artist: editDraft.artist.trim() || null,
+      song_key: editDraft.song_key,
+      lyrics: editDraft.lyrics,
+    }).eq("id", editing.id);
+    if (error) toast.error(error.message);
+    else { toast.success("Cambios guardados"); setEditing(null); load(); }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    const { error } = await supabase.from("global_songs").delete().eq("id", deleting.id);
+    if (error) toast.error(error.message);
+    else { toast.success("Canción eliminada"); setDeleting(null); load(); }
   };
 
   const f = filter.toLowerCase();
@@ -93,10 +143,11 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Proponer canción al catálogo global</DialogTitle></DialogHeader>
-            <p className="text-sm text-muted-foreground">Tu propuesta será revisada por el Dueño antes de publicarse.</p>
+            <p className="text-sm text-muted-foreground">Tu propuesta será revisada por el Dueño antes de publicarse. El borrador se guarda automáticamente.</p>
             <SongFormFields value={draft} onChange={setDraft} />
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setProposeOpen(false)}>Cancelar</Button>
+            <DialogFooter className="gap-2">
+              <Button variant="ghost" onClick={() => { setDraft(emptyDraft); localStorage.removeItem(DRAFT_KEY); }}>Limpiar</Button>
+              <Button variant="outline" onClick={() => setProposeOpen(false)}>Cerrar</Button>
               <Button onClick={propose} disabled={saving}>{saving ? "..." : "Enviar a revisión"}</Button>
             </DialogFooter>
           </DialogContent>
@@ -135,24 +186,67 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
             Aún no hay canciones aprobadas. ¡Proponé la primera!
           </Card>
         ) : approved.map(s => (
-          <Card key={s.id} className="p-4 flex items-center gap-3 flex-wrap">
-            <div className="flex-1 min-w-[180px]">
-              <h4 className="font-semibold">{s.title}</h4>
-              <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => onView(s)}>
-                <Eye className="w-4 h-4 mr-1" /> Ver
-              </Button>
-              {isAdminOfChurch && (
-                <Button size="sm" onClick={() => onAddToSetlist(s)}>
-                  <ListPlus className="w-4 h-4 mr-1" /> A lista
+          <Card key={s.id} className="p-4 space-y-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex-1 min-w-[180px]">
+                <h4 className="font-semibold">{s.title}</h4>
+                <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button size="sm" variant="outline" onClick={() => onView(s)}>
+                  <Eye className="w-4 h-4 mr-1" /> Ver
                 </Button>
-              )}
+                {isAdminOfChurch && (
+                  <Button size="sm" onClick={() => onAddToSetlist(s)}>
+                    <ListPlus className="w-4 h-4 mr-1" /> A lista
+                  </Button>
+                )}
+                {isOwner && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => startEdit(s)}>
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => setDeleting(s)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground italic">
+              Colaborador: {s.contributor_name || "—"}
+            </p>
           </Card>
         ))}
       </div>
+
+      {/* Edición Owner */}
+      <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Editar canción del catálogo</DialogTitle></DialogHeader>
+          <SongFormFields value={editDraft} onChange={setEditDraft} />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
+            <Button onClick={saveEdit}>Guardar cambios</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmar borrado */}
+      <AlertDialog open={!!deleting} onOpenChange={o => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar "{deleting?.title}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se quitará del catálogo global. Las copias ya agregadas a listas de iglesias se conservan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Eliminar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
