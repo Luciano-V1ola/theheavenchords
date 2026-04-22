@@ -9,13 +9,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, X, Eye, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import SongFormFields, { SongFields } from "./SongFormFields";
+import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import SongViewer from "./SongViewer";
 
 type Pending = {
   id: string; title: string; artist: string | null; song_key: string; lyrics: string;
   status: "pending" | "approved" | "rejected"; proposed_by: string; created_at: string;
+  font?: SongFont;
 };
+
+// Helpers para fuente embebida
+function packLyrics(lyrics: string, font: SongFont | undefined): string {
+  const f = font ?? "arial";
+  return `[font:${f}]\n${lyrics.replace(/^\[font:(arial|calibri)\]\s*\n?/i, "")}`;
+}
+function unpackLyrics(lyrics: string): { font: SongFont; clean: string } {
+  const m = lyrics.match(/^\[font:(arial|calibri)\]\s*\n?/i);
+  if (!m) return { font: "arial", clean: lyrics };
+  return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
+}
 
 // Bandeja exclusiva del Dueño global
 export default function OwnerReview() {
@@ -24,7 +36,7 @@ export default function OwnerReview() {
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Pending | null>(null);
   const [editing, setEditing] = useState<Pending | null>(null);
-  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "" });
+  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial" });
   const [rejectFor, setRejectFor] = useState<Pending | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
@@ -36,7 +48,10 @@ export default function OwnerReview() {
       .eq("status", "pending")
       .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
-    else setItems((data ?? []) as Pending[]);
+    else setItems(((data ?? []) as Pending[]).map(p => {
+      const { font, clean } = unpackLyrics(p.lyrics);
+      return { ...p, font, lyrics: clean };
+    }));
     setLoading(false);
   };
 
@@ -65,7 +80,7 @@ export default function OwnerReview() {
   };
 
   const startEdit = (s: Pending) => {
-    setDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics });
+    setDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics, font: s.font ?? "arial" });
     setEditing(s);
   };
 
@@ -75,7 +90,7 @@ export default function OwnerReview() {
       title: draft.title.trim(),
       artist: draft.artist.trim() || null,
       song_key: draft.song_key,
-      lyrics: draft.lyrics,
+      lyrics: packLyrics(draft.lyrics, draft.font),
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
     else { toast.success("Guardado"); setEditing(null); load(); }
@@ -112,7 +127,6 @@ export default function OwnerReview() {
         </Card>
       ))}
 
-      {/* Edición inline */}
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Editar antes de aprobar</DialogTitle></DialogHeader>
@@ -124,7 +138,6 @@ export default function OwnerReview() {
         </DialogContent>
       </Dialog>
 
-      {/* Motivo de rechazo */}
       <Dialog open={!!rejectFor} onOpenChange={o => !o && setRejectFor(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Rechazar "{rejectFor?.title}"</DialogTitle></DialogHeader>
