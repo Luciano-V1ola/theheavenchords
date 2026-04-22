@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Search, Eye, ListPlus, Clock, X, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import SongFormFields, { SongFields } from "./SongFormFields";
+import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import type { Membership } from "@/hooks/useChurch";
 
 // Canción del catálogo global
@@ -17,16 +17,29 @@ export type GlobalSong = {
   id: string; title: string; artist: string | null; song_key: string; lyrics: string;
   status: "pending" | "approved" | "rejected"; proposed_by: string;
   contributor_name?: string | null;
+  font?: SongFont | null;
 };
 
 type Props = {
   church: Membership | null;
-  onView: (s: GlobalSong) => void;
-  onAddToSetlist: (s: GlobalSong) => void;   // abre selector de lista
+  // Recibe la canción y la lista de "hermanas" para navegar en el visor
+  onView: (s: GlobalSong, siblings: GlobalSong[]) => void;
+  onAddToSetlist: (s: GlobalSong) => void;
 };
 
 const DRAFT_KEY = "globalCatalog.proposeDraft";
-const emptyDraft: SongFields = { title: "", artist: "", song_key: "C", lyrics: "" };
+const emptyDraft: SongFields = { title: "", artist: "", song_key: "C", lyrics: "", font: "arial" };
+
+// Helpers para guardar/leer la fuente embebida en la primer línea de lyrics
+function packLyrics(lyrics: string, font: SongFont | undefined): string {
+  const f = font ?? "arial";
+  return `[font:${f}]\n${lyrics.replace(/^\[font:(arial|calibri)\]\s*\n?/i, "")}`;
+}
+function unpackLyrics(lyrics: string): { font: SongFont; clean: string } {
+  const m = lyrics.match(/^\[font:(arial|calibri)\]\s*\n?/i);
+  if (!m) return { font: "arial", clean: lyrics };
+  return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
+}
 
 export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props) {
   const { user, isOwner } = useAuth();
@@ -56,8 +69,11 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       .order("title");
     if (error) { toast.error(error.message); setLoading(false); return; }
 
-    const rows = (data ?? []) as GlobalSong[];
-    // Traer nombres de colaboradores
+    const rows = (data ?? []).map(r => {
+      const { font, clean } = unpackLyrics(r.lyrics);
+      return { ...r, font, lyrics: clean } as GlobalSong;
+    });
+    // Traer nombres de colaboradores (sólo se muestran dentro del visor de la canción)
     const ids = Array.from(new Set(rows.map(r => r.proposed_by)));
     if (ids.length) {
       const { data: profs } = await supabase.from("profiles")
@@ -79,7 +95,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       title: draft.title.trim(),
       artist: draft.artist.trim() || null,
       song_key: draft.song_key,
-      lyrics: draft.lyrics,
+      lyrics: packLyrics(draft.lyrics, draft.font),
       proposed_by: user.id,
       status: "pending",
     });
@@ -99,7 +115,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
   };
 
   const startEdit = (s: GlobalSong) => {
-    setEditDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics });
+    setEditDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics, font: s.font ?? "arial" });
     setEditing(s);
   };
 
@@ -109,7 +125,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       title: editDraft.title.trim(),
       artist: editDraft.artist.trim() || null,
       song_key: editDraft.song_key,
-      lyrics: editDraft.lyrics,
+      lyrics: packLyrics(editDraft.lyrics, editDraft.font),
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
     else { toast.success("Cambios guardados"); setEditing(null); load(); }
@@ -186,14 +202,14 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
             Aún no hay canciones aprobadas. ¡Proponé la primera!
           </Card>
         ) : approved.map(s => (
-          <Card key={s.id} className="p-4 space-y-2">
+          <Card key={s.id} className="p-4">
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-1 min-w-[180px]">
                 <h4 className="font-semibold">{s.title}</h4>
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={() => onView(s)}>
+                <Button size="sm" variant="outline" onClick={() => onView(s, approved)}>
                   <Eye className="w-4 h-4 mr-1" /> Ver
                 </Button>
                 {isAdminOfChurch && (
@@ -213,9 +229,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
                 )}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground italic">
-              Colaborador: {s.contributor_name || "—"}
-            </p>
+            {/* "Colaborador" se muestra ahora sólo dentro del visor de la canción */}
           </Card>
         ))}
       </div>

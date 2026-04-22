@@ -34,13 +34,16 @@ export default function AddToSetlistDialog({ church, song, onClose }: Props) {
   const add = async () => {
     if (!song || !selected || !user) return;
     setSaving(true);
+    // Re-empaca la fuente como metadata al inicio para que la copia conserve la tipografía
+    const font = song.font ?? "arial";
+    const lyricsToStore = `[font:${font}]\n${song.lyrics.replace(/^\[font:(arial|calibri)\]\s*\n?/i, "")}`;
     const { error } = await supabase.from("setlist_songs").insert({
       setlist_id: selected,
       global_song_id: song.id,
       title: song.title,
       artist: song.artist,
       song_key: song.song_key,
-      lyrics: song.lyrics,
+      lyrics: lyricsToStore,
       added_by: user.id,
     });
     setSaving(false);

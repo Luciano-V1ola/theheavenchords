@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,23 +7,35 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ArrowLeft, Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import SongViewer from "./SongViewer";
-import SongFormFields, { SongFields } from "./SongFormFields";
+import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import type { Setlist } from "./SetlistsView";
 import type { Membership } from "@/hooks/useChurch";
 
 type Item = {
   id: string; setlist_id: string; position: number;
   title: string; artist: string | null; song_key: string; lyrics: string;
+  font?: SongFont;
 };
 
 type Props = { church: Membership; setlist: Setlist; onBack: () => void };
+
+// Helpers para fuente embebida en lyrics
+function packLyrics(lyrics: string, font: SongFont | undefined): string {
+  const f = font ?? "arial";
+  return `[font:${f}]\n${lyrics.replace(/^\[font:(arial|calibri)\]\s*\n?/i, "")}`;
+}
+function unpackLyrics(lyrics: string): { font: SongFont; clean: string } {
+  const m = lyrics.match(/^\[font:(arial|calibri)\]\s*\n?/i);
+  if (!m) return { font: "arial", clean: lyrics };
+  return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
+}
 
 export default function SetlistDetail({ church, setlist, onBack }: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Item | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
-  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "" });
+  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial" });
   const isAdmin = church.role === "admin";
 
   const load = async () => {
@@ -35,7 +47,10 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
       .order("position", { ascending: true })
       .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
-    else setItems(data ?? []);
+    else setItems((data ?? []).map(it => {
+      const { font, clean } = unpackLyrics(it.lyrics);
+      return { ...it, font, lyrics: clean };
+    }));
     setLoading(false);
   };
 
@@ -48,7 +63,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   };
 
   const startEdit = (it: Item) => {
-    setDraft({ title: it.title, artist: it.artist ?? "", song_key: it.song_key, lyrics: it.lyrics });
+    setDraft({ title: it.title, artist: it.artist ?? "", song_key: it.song_key, lyrics: it.lyrics, font: it.font ?? "arial" });
     setEditing(it);
   };
 
@@ -58,16 +73,26 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
       title: draft.title.trim(),
       artist: draft.artist.trim() || null,
       song_key: draft.song_key,
-      lyrics: draft.lyrics,
+      lyrics: packLyrics(draft.lyrics, draft.font),
     }).eq("id", editing.id);
     if (error) toast.error(error.message);
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
 
+  // Lista para navegación dentro del visor
+  const siblings = useMemo(() => items.map(it => ({
+    id: it.id, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font,
+  })), [items]);
+
   if (viewing) {
     return (
       <SongViewer
         song={viewing}
+        siblings={siblings}
+        onSelect={(s) => {
+          const found = items.find(it => it.id === s.id);
+          if (found) setViewing(found);
+        }}
         onBack={() => setViewing(null)}
         onEdit={isAdmin ? () => { startEdit(viewing); setViewing(null); } : undefined}
       />
