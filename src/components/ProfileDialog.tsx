@@ -23,6 +23,7 @@ export default function ProfileDialog() {
   const [email, setEmail] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
 
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [savingPwd, setSavingPwd] = useState(false);
@@ -54,13 +55,27 @@ export default function ProfileDialog() {
   };
 
   const savePassword = async () => {
+    if (!user?.email) return;
+    if (!currentPassword) { toast.error("Ingresá tu contraseña actual"); return; }
     if (password.length < 6) { toast.error("Mínimo 6 caracteres"); return; }
     if (password !== password2) { toast.error("Las contraseñas no coinciden"); return; }
     setSavingPwd(true);
+    // Reautenticar verificando la contraseña actual antes de cambiarla
+    const { error: reauthErr } = await supabase.auth.signInWithPassword({
+      email: user.email, password: currentPassword,
+    });
+    if (reauthErr) {
+      setSavingPwd(false);
+      toast.error("La contraseña actual es incorrecta");
+      return;
+    }
     const { error } = await supabase.auth.updateUser({ password });
     setSavingPwd(false);
     if (error) toast.error(error.message);
-    else { toast.success("Contraseña actualizada"); setPassword(""); setPassword2(""); }
+    else {
+      toast.success("Contraseña actualizada");
+      setCurrentPassword(""); setPassword(""); setPassword2("");
+    }
   };
 
   return (
@@ -95,10 +110,13 @@ export default function ProfileDialog() {
           </TabsContent>
 
           <TabsContent value="password" className="space-y-2">
+            <Label>Contraseña actual</Label>
+            <Input type="password" autoComplete="current-password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
             <Label>Nueva contraseña</Label>
-            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-            <Label>Repetir</Label>
-            <Input type="password" value={password2} onChange={e => setPassword2(e.target.value)} />
+            <Input type="password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
+            <Label>Repetir nueva contraseña</Label>
+            <Input type="password" autoComplete="new-password" value={password2} onChange={e => setPassword2(e.target.value)} />
+            <p className="text-xs text-muted-foreground">Por seguridad verificamos tu contraseña actual antes de cambiarla.</p>
             <Button onClick={savePassword} disabled={savingPwd} className="w-full">
               {savingPwd ? "..." : "Cambiar contraseña"}
             </Button>
