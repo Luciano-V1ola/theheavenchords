@@ -23,6 +23,7 @@ import OwnerReview from "@/components/OwnerReview";
 import ChurchSettings from "@/components/ChurchSettings";
 import AddToSetlistDialog from "@/components/AddToSetlistDialog";
 import ProfileDialog from "@/components/ProfileDialog";
+import InstallPrompt from "@/components/InstallPrompt";
 
 type Tab = "catalog" | "lists" | "review" | "settings";
 
@@ -262,6 +263,8 @@ export default function Index() {
       {current && (
         <AddToSetlistDialog church={current} song={addToList} onClose={() => setAddToList(null)} />
       )}
+
+      <InstallPrompt />
     </div>
   );
 }
