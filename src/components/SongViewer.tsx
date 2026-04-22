@@ -1,26 +1,54 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List } from "lucide-react";
 import { toast } from "sonner";
-import { NOTES_SHARP, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
+import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
+import { SongFont } from "./SongFormFields";
 
 // Visor reutilizable: recibe una canción ya cargada (catálogo global o item de setlist).
-export type ViewerSong = { title: string; artist?: string | null; song_key: string; lyrics: string; contributor_name?: string | null };
+// Soporta navegación entre canciones (anterior/siguiente y sidebar).
+export type ViewerSong = {
+  id?: string;
+  title: string;
+  artist?: string | null;
+  song_key: string;
+  lyrics: string;
+  font?: SongFont | null;
+  contributor_name?: string | null;
+};
+
 type Props = {
   song: ViewerSong;
   onBack: () => void;
-  onEdit?: () => void;       // opcional, solo si el usuario puede editar
+  onEdit?: () => void;
+  // Lista opcional de canciones para navegación (anterior/siguiente y sidebar)
+  siblings?: ViewerSong[];
+  onSelect?: (s: ViewerSong) => void;
 };
 
-export default function SongViewer({ song, onBack, onEdit }: Props) {
+// Extrae una línea de metadata "[font:arial]" si existe
+function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
+  const m = lyrics.match(/^\[font:(arial|calibri)\]\s*\n?/i);
+  if (!m) return { font: null, clean: lyrics };
+  return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
+}
+
+export default function SongViewer({ song, onBack, onEdit, siblings, onSelect }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
   const [scrolling, setScrolling] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const scrollRef = useRef<number | null>(null);
 
+  // Datos derivados de la canción (limpia metadata de fuente)
+  const { font: embeddedFont, clean } = useMemo(() => extractFont(song.lyrics), [song.lyrics]);
+  const font: SongFont = song.font ?? embeddedFont ?? "arial";
+  const fontClass = font === "calibri" ? "font-calibri" : "font-arial";
+
   // Si cambia la canción, resetea el tono al original
-  useEffect(() => { setCurrentKey(song.song_key); }, [song.song_key]);
+  useEffect(() => { setCurrentKey(song.song_key); window.scrollTo({ top: 0 }); }, [song.song_key, song.id, song.title]);
 
   // Auto-scroll
   useEffect(() => {
@@ -36,29 +64,81 @@ export default function SongViewer({ song, onBack, onEdit }: Props) {
   }, [scrolling]);
 
   const semitones = noteIndex(currentKey) - noteIndex(song.song_key);
-  const lines = renderLines(song.lyrics, semitones);
+  const lines = renderLines(clean, semitones, currentKey);
   const transpose = (n: number) => {
     const idx = noteIndex(currentKey);
-    setCurrentKey(NOTES_SHARP[(idx + n + 12) % 12]);
+    setCurrentKey(KEY_OPTIONS.find(k => noteIndex(k) === ((idx + n + 12) % 12)) ?? KEY_OPTIONS[(idx + n + 12) % 12]);
   };
 
   const copy = async () => {
-    const text = song.lyrics.split("\n").map(l => isChordLine(l) ? transposeChordLine(l, semitones) : l).join("\n");
+    const text = clean.split("\n").map(l => isChordLine(l) ? transposeChordLine(l, semitones, currentKey) : l).join("\n");
     const full = `${song.title}${song.artist ? " - " + song.artist : ""}\nTono: ${currentKey}\n\n${text}`;
     await navigator.clipboard.writeText(full);
     toast.success("Copiado");
   };
 
+  // Navegación entre canciones del listado
+  const idx = siblings?.findIndex(s => (s.id && song.id ? s.id === song.id : s.title === song.title)) ?? -1;
+  const prev = idx > 0 ? siblings![idx - 1] : null;
+  const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
         <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4 mr-1" /> Volver</Button>
+
+        {siblings && siblings.length > 1 && onSelect && (
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" title="Lista de canciones">
+                <List className="w-4 h-4 mr-1" /> Lista
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 overflow-y-auto">
+              <SheetHeader><SheetTitle>Canciones</SheetTitle></SheetHeader>
+              <div className="mt-4 space-y-1">
+                {siblings.map((s) => {
+                  const active = s.id ? s.id === song.id : s.title === song.title;
+                  return (
+                    <button
+                      key={s.id ?? s.title}
+                      onClick={() => { onSelect(s); setSidebarOpen(false); }}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                        active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                      }`}
+                    >
+                      <div className="font-medium truncate">{s.title}</div>
+                      {s.artist && <div className={`text-xs truncate ${active ? "opacity-80" : "text-muted-foreground"}`}>{s.artist}</div>}
+                    </button>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
+
         <div className="flex-1 min-w-0">
-          <h2 className="font-bold truncate">{song.title}</h2>
+          {/* Título grande */}
+          <h2 className={`font-bold text-xl sm:text-2xl truncate ${fontClass}`}>{song.title}</h2>
           {song.artist && <p className="text-sm text-muted-foreground truncate">{song.artist}</p>}
         </div>
+
         {onEdit && <Button variant="outline" size="sm" onClick={onEdit}><Pencil className="w-4 h-4" /></Button>}
       </div>
+
+      {/* Navegación rápida */}
+      {siblings && siblings.length > 1 && onSelect && (
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" disabled={!prev} onClick={() => prev && onSelect(prev)} className="flex-1">
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            <span className="truncate">{prev ? prev.title : "Anterior"}</span>
+          </Button>
+          <Button variant="outline" size="sm" disabled={!next} onClick={() => next && onSelect(next)} className="flex-1">
+            <span className="truncate">{next ? next.title : "Siguiente"}</span>
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
+      )}
 
       <Card className="p-3 flex flex-wrap items-center gap-2 justify-between">
         <div className="flex items-center gap-2">
@@ -66,9 +146,9 @@ export default function SongViewer({ song, onBack, onEdit }: Props) {
           <div className="flex items-center gap-2">
             <span className="text-sm">Tono:</span>
             <Select value={currentKey} onValueChange={setCurrentKey}>
-              <SelectTrigger className="w-20 h-8"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-24 h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {NOTES_SHARP.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                {KEY_OPTIONS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -83,10 +163,12 @@ export default function SongViewer({ song, onBack, onEdit }: Props) {
       </Card>
 
       <Card className="p-4 sm:p-6 overflow-x-auto">
-        <pre className="font-song text-sm sm:text-base leading-relaxed whitespace-pre">
-          {lines.map((l, i) => (
-            <div key={i} className={l.type === "chord" ? "chord-line" : ""}>{l.text || "\u00A0"}</div>
-          ))}
+        <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
+          {lines.map((l, i) => {
+            if (l.type === "chord") return <div key={i} className="chord-line">{l.text || "\u00A0"}</div>;
+            if (l.type === "section") return <div key={i} className="section-line">{l.text}</div>;
+            return <div key={i}>{l.text || "\u00A0"}</div>;
+          })}
         </pre>
       </Card>
 
