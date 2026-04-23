@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useGlobalRole } from "@/hooks/useGlobalRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -18,6 +19,7 @@ export type GlobalSong = {
   status: "pending" | "approved" | "rejected"; proposed_by: string;
   contributor_name?: string | null;
   font?: SongFont | null;
+  hidden?: boolean;
 };
 
 type Props = {
@@ -42,7 +44,8 @@ function unpackLyrics(lyrics: string): { font: SongFont; clean: string } {
 }
 
 export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props) {
-  const { user, isOwner } = useAuth();
+  const { user } = useAuth();
+  const { isOwner, isOwnerOrMod, isModerator } = useGlobalRole();
   const [songs, setSongs] = useState<GlobalSong[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
@@ -56,24 +59,25 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
   const [editDraft, setEditDraft] = useState<SongFields>(emptyDraft);
   const [deleting, setDeleting] = useState<GlobalSong | null>(null);
 
-  // Persistir borrador automáticamente
+  // Persistir borrador
   useEffect(() => {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-  }, [draft]);
+    if (user) localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  }, [draft, user]);
 
   const load = async () => {
     setLoading(true);
+    // Para invitados (sin login) el cliente igualmente puede consultar
+    // gracias a la política RLS sobre canciones aprobadas no ocultas.
     const { data, error } = await supabase
       .from("global_songs")
-      .select("id, title, artist, song_key, lyrics, status, proposed_by")
+      .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden")
       .order("title");
     if (error) { toast.error(error.message); setLoading(false); return; }
 
     const rows = (data ?? []).map(r => {
-      const { font, clean } = unpackLyrics(r.lyrics);
+      const { font, clean } = unpackLyrics((r as any).lyrics);
       return { ...r, font, lyrics: clean } as GlobalSong;
     });
-    // Traer nombres de colaboradores (sólo se muestran dentro del visor de la canción)
     const ids = Array.from(new Set(rows.map(r => r.proposed_by)));
     if (ids.length) {
       const { data: profs } = await supabase.from("profiles")
@@ -85,10 +89,14 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [user?.id]);
+
+  const requireLogin = () => {
+    toast.error("Necesitás iniciar sesión para hacer esto");
+  };
 
   const propose = async () => {
-    if (!user) return;
+    if (!user) return requireLogin();
     if (!draft.title.trim() || !draft.lyrics.trim()) { toast.error("Faltan campos"); return; }
     setSaving(true);
     const { error } = await supabase.from("global_songs").insert({
@@ -101,7 +109,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     });
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Propuesta enviada al Dueño para revisión");
+    toast.success("Propuesta enviada para revisión");
     setDraft(emptyDraft);
     localStorage.removeItem(DRAFT_KEY);
     setProposeOpen(false);
@@ -119,31 +127,57 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     setEditing(s);
   };
 
+  // Si es moderador (no dueño), al editar ocultamos la canción y la mandamos a Revisión.
+  // Si es dueño, los cambios quedan visibles directamente.
   const saveEdit = async () => {
     if (!editing) return;
-    const { error } = await supabase.from("global_songs").update({
+    const patch: any = {
       title: editDraft.title.trim(),
       artist: editDraft.artist.trim() || null,
       song_key: editDraft.song_key,
       lyrics: packLyrics(editDraft.lyrics, editDraft.font),
-    }).eq("id", editing.id);
+    };
+    if (isModerator && !isOwner) {
+      patch.hidden = true;
+      patch.pending_changes = "Editada por moderador";
+    }
+    const { error } = await supabase.from("global_songs").update(patch).eq("id", editing.id);
     if (error) toast.error(error.message);
-    else { toast.success("Cambios guardados"); setEditing(null); load(); }
+    else {
+      toast.success(isModerator && !isOwner ? "Cambios enviados a Revisión" : "Cambios guardados");
+      setEditing(null); load();
+    }
   };
 
+  // Eliminar:
+  // - Dueño: borra definitivamente.
+  // - Moderador: oculta la canción y la envía a Revisión (no borra).
   const confirmDelete = async () => {
     if (!deleting) return;
-    const { error } = await supabase.from("global_songs").delete().eq("id", deleting.id);
-    if (error) toast.error(error.message);
-    else { toast.success("Canción eliminada"); setDeleting(null); load(); }
+    if (isOwner) {
+      const { error } = await supabase.from("global_songs").delete().eq("id", deleting.id);
+      if (error) return toast.error(error.message);
+      toast.success("Canción eliminada definitivamente");
+    } else if (isModerator) {
+      const { error } = await supabase.from("global_songs")
+        .update({ hidden: true, pending_changes: "Eliminada por moderador" })
+        .eq("id", deleting.id);
+      if (error) return toast.error(error.message);
+      toast.success("Enviada a Revisión");
+    }
+    setDeleting(null); load();
   };
 
   const f = filter.toLowerCase();
   const filtered = songs.filter(s =>
     !f || s.title.toLowerCase().includes(f) || (s.artist ?? "").toLowerCase().includes(f)
   );
-  const approved = filtered.filter(s => s.status === "approved");
-  const mine = filtered.filter(s => s.status !== "approved" && s.proposed_by === user?.id);
+  // El catálogo público muestra solo aprobadas y no ocultas.
+  // Owner/Mod ven todas para poder restaurar/aprobar.
+  const approved = filtered.filter(s =>
+    s.status === "approved" && (isOwnerOrMod ? true : !s.hidden)
+  );
+  const mine = user ? filtered.filter(s => s.status !== "approved" && s.proposed_by === user.id) : [];
   const isAdminOfChurch = church?.role === "admin";
 
   return (
@@ -153,21 +187,25 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input className="pl-9" placeholder="Buscar canción..." value={filter} onChange={e => setFilter(e.target.value)} />
         </div>
-        <Dialog open={proposeOpen} onOpenChange={setProposeOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-1" /> Proponer</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Proponer canción al catálogo global</DialogTitle></DialogHeader>
-            <p className="text-sm text-muted-foreground">Tu propuesta será revisada por el Dueño antes de publicarse. El borrador se guarda automáticamente.</p>
-            <SongFormFields value={draft} onChange={setDraft} />
-            <DialogFooter className="gap-2">
-              <Button variant="ghost" onClick={() => { setDraft(emptyDraft); localStorage.removeItem(DRAFT_KEY); }}>Limpiar</Button>
-              <Button variant="outline" onClick={() => setProposeOpen(false)}>Cerrar</Button>
-              <Button onClick={propose} disabled={saving}>{saving ? "..." : "Enviar a revisión"}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {user ? (
+          <Dialog open={proposeOpen} onOpenChange={setProposeOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="w-4 h-4 mr-1" /> Proponer</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Proponer canción al catálogo global</DialogTitle></DialogHeader>
+              <p className="text-sm text-muted-foreground">Tu propuesta será revisada antes de publicarse. El borrador se guarda automáticamente.</p>
+              <SongFormFields value={draft} onChange={setDraft} />
+              <DialogFooter className="gap-2">
+                <Button variant="ghost" onClick={() => { setDraft(emptyDraft); localStorage.removeItem(DRAFT_KEY); }}>Limpiar</Button>
+                <Button variant="outline" onClick={() => setProposeOpen(false)}>Cerrar</Button>
+                <Button onClick={propose} disabled={saving}>{saving ? "..." : "Enviar a revisión"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <Button onClick={requireLogin}><Plus className="w-4 h-4 mr-1" /> Proponer</Button>
+        )}
       </div>
 
       {mine.length > 0 && (
@@ -199,25 +237,28 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
           <p className="text-center text-muted-foreground py-8">Cargando...</p>
         ) : approved.length === 0 ? (
           <Card className="p-8 text-center text-muted-foreground">
-            Aún no hay canciones aprobadas. ¡Proponé la primera!
+            Aún no hay canciones aprobadas.
           </Card>
         ) : approved.map(s => (
           <Card key={s.id} className="p-4">
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-1 min-w-[180px]">
-                <h4 className="font-semibold">{s.title}</h4>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-semibold">{s.title}</h4>
+                  {s.hidden && <Badge variant="destructive">Oculta</Badge>}
+                </div>
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Button size="sm" variant="outline" onClick={() => onView(s, approved)}>
                   <Eye className="w-4 h-4 mr-1" /> Ver
                 </Button>
-                {isAdminOfChurch && (
+                {user && isAdminOfChurch && (
                   <Button size="sm" onClick={() => onAddToSetlist(s)}>
                     <ListPlus className="w-4 h-4 mr-1" /> A lista
                   </Button>
                 )}
-                {isOwner && (
+                {isOwnerOrMod && (
                   <>
                     <Button size="sm" variant="outline" onClick={() => startEdit(s)}>
                       <Pencil className="w-4 h-4" />
@@ -229,15 +270,19 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
                 )}
               </div>
             </div>
-            {/* "Colaborador" se muestra ahora sólo dentro del visor de la canción */}
           </Card>
         ))}
       </div>
 
-      {/* Edición Owner */}
+      {/* Edición Owner/Mod */}
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Editar canción del catálogo</DialogTitle></DialogHeader>
+          {isModerator && !isOwner && (
+            <p className="text-xs text-muted-foreground">
+              Como moderador, tus cambios enviarán esta canción a la pestaña <b>Revisión</b> del Dueño.
+            </p>
+          )}
           <SongFormFields value={editDraft} onChange={setEditDraft} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
@@ -246,18 +291,19 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
         </DialogContent>
       </Dialog>
 
-      {/* Confirmar borrado */}
       <AlertDialog open={!!deleting} onOpenChange={o => !o && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar "{deleting?.title}"?</AlertDialogTitle>
+            <AlertDialogTitle>¿{isOwner ? "Eliminar definitivamente" : "Enviar a Revisión"} "{deleting?.title}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              Se quitará del catálogo global. Las copias ya agregadas a listas de iglesias se conservan.
+              {isOwner
+                ? "La canción se borrará para siempre del catálogo. Las copias en listas de iglesias se conservan."
+                : "La canción se ocultará del catálogo y aparecerá en la pestaña Revisión del Dueño, que decidirá si restaurarla o eliminarla."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>{isOwner ? "Eliminar" : "Enviar"}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
