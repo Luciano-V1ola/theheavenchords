@@ -67,15 +67,34 @@ export function transposeChordLine(line: string, semitones: number, currentKey =
   return out;
 }
 
-// Palabras clave de sección que se renderizan en negrita
-const SECTION_RE = /^(coro|estrofa|verso|pre[\s-]?coro|puente|intro|outro|final|interludio|tag)\b/i;
+// Palabras clave de sección que se renderizan en negrita.
+// Acepta variantes con número opcional (Coro 2, Verso2, Puente 3, etc.) y dos puntos opcionales.
+const SECTION_RE = /^\s*(coro|estrofa|verso|pre[\s-]?coro|puente|intro|outro|final|interludio|tag)\s*\d*\s*:?\s*$/i;
 export function isSectionLabel(line: string): boolean {
-  return SECTION_RE.test(line.trim());
+  return SECTION_RE.test(line);
 }
 
-// Devuelve la letra completa con cada línea ya transpuesta + flag chord/text/section
+// Detecta si la primera línea es un "título de canción": algo como
+// "Cuán Grande es Dios (C)" o "Mi Canción - Tono D". Heurística:
+// no tiene acordes y la línea siguiente no es un acorde directo,
+// es corta (<80 chars) y no empieza con etiqueta de sección.
+export function isTitleLine(line: string, idx: number): boolean {
+  if (idx !== 0) return false;
+  const t = line.trim();
+  if (!t) return false;
+  if (t.length > 80) return false;
+  if (isSectionLabel(t)) return false;
+  if (isChordLine(t)) return false;
+  return true;
+}
+
+// Devuelve la letra completa con cada línea ya transpuesta + flag chord/text/section/title
 export function renderLines(lyrics: string, semitones: number, currentKey = "C") {
-  return lyrics.split("\n").map(line => {
+  const raw = lyrics.split("\n");
+  return raw.map((line, idx) => {
+    if (isTitleLine(line, idx)) {
+      return { type: "title" as const, text: line };
+    }
     if (isChordLine(line)) {
       return { type: "chord" as const, text: transposeChordLine(line, semitones, currentKey) };
     }
