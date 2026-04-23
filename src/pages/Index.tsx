@@ -108,8 +108,8 @@ export default function Index() {
         {/* Fila 1: título centrado y grande, con acciones en esquinas */}
         <div className="max-w-4xl mx-auto px-4 pt-3 pb-2 grid grid-cols-[auto_1fr_auto] items-center gap-2">
           <div className="flex items-center gap-1">
-            {isAppOwner && <Crown className="w-4 h-4 text-primary" titleID="Dueño" />}
-            {isModerator && <Shield className="w-4 h-4 text-primary" titleID="Moderador" />}
+            {isAppOwner && <Crown className="w-4 h-4 text-primary"><title>Dueño</title></Crown>}
+            {isModerator && <Shield className="w-4 h-4 text-primary"><title>Moderador</title></Shield>}
           </div>
           <h1 className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
             <span className="inline-flex items-center gap-2 justify-center">
