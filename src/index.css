@@ -9,8 +9,10 @@
 
 /* Línea de acordes destacada con color primario */
 .chord-line { color: hsl(var(--primary)); font-weight: 700; }
-/* Etiquetas de sección (Coro, Estrofa, etc.) en negrita marcada */
+/* Etiquetas de sección (Coro, Estrofa, Coro 2, etc.) en negrita marcada */
 .section-line { font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.5rem; }
+/* Título principal de la canción (primera línea detectada) */
+.title-line { font-weight: 800; font-size: 1.25em; line-height: 1.2; margin-bottom: 0.25rem; }
 
 @layer base {
   :root {
