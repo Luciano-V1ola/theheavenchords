@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,9 @@ import { Music } from "lucide-react";
 export default function Auth() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const inviteToken = params.get("invite"); // si viene de un email de invitación
+  const inviteToken = params.get("invite");
   const [mode, setMode] = useState<"login" | "signup">(inviteToken ? "signup" : "login");
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,9 +24,13 @@ export default function Auth() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        if (!displayName.trim()) { toast.error("El nombre de usuario es obligatorio"); setLoading(false); return; }
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: `${window.location.origin}/${inviteToken ? `?invite=${inviteToken}` : ""}` }
+          options: {
+            emailRedirectTo: `${window.location.origin}/${inviteToken ? `?invite=${inviteToken}` : ""}`,
+            data: { display_name: displayName.trim() },
+          }
         });
         if (error) throw error;
         toast.success("Cuenta creada. Revisa tu email si se requiere confirmación.");
@@ -33,7 +38,6 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      // Si hay invitación, intentar aceptarla
       if (inviteToken) {
         const { error } = await supabase.rpc("accept_invitation", { _token: inviteToken });
         if (error) toast.error("No se pudo aceptar la invitación: " + error.message);
@@ -54,13 +58,26 @@ export default function Auth() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
             <Music className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">Acordes</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">The Heaven Chords</h1>
           <p className="text-sm text-muted-foreground">
             {inviteToken ? "Crea tu cuenta para unirte a la iglesia" : "Repertorio compartido para tu iglesia"}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <div>
+              <Label htmlFor="displayName">Nombre de usuario *</Label>
+              <Input
+                id="displayName"
+                required
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                placeholder="Lucho"
+                maxLength={50}
+              />
+            </div>
+          )}
           <div>
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
@@ -74,7 +91,7 @@ export default function Auth() {
           </Button>
         </form>
 
-        <div className="text-center text-sm">
+        <div className="text-center text-sm space-y-2">
           {mode === "login" ? (
             <button onClick={() => setMode("signup")} className="text-primary hover:underline">
               ¿No tienes cuenta? Regístrate
@@ -84,6 +101,11 @@ export default function Auth() {
               ¿Ya tienes cuenta? Inicia sesión
             </button>
           )}
+          <div>
+            <button onClick={() => navigate("/")} className="text-xs text-muted-foreground hover:underline">
+              Entrar como invitado (solo lectura)
+            </button>
+          </div>
         </div>
       </Card>
     </div>

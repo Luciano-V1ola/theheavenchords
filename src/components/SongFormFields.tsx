@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { KEY_OPTIONS } from "@/lib/chords";
+import SongPreview from "./SongPreview";
 
 // Tipografías disponibles para mostrar la canción
 export type SongFont = "arial" | "calibri";
@@ -20,15 +21,15 @@ export type SongFields = {
   font?: SongFont;
 };
 
-type Props = { value: SongFields; onChange: (v: SongFields) => void };
+type Props = { value: SongFields; onChange: (v: SongFields) => void; showPreview?: boolean };
 
-export default function SongFormFields({ value, onChange }: Props) {
+export default function SongFormFields({ value, onChange, showPreview = true }: Props) {
   const set = (patch: Partial<SongFields>) => onChange({ ...value, ...patch });
   return (
     <div className="space-y-3">
       <div>
         <Label>Título *</Label>
-        <Input value={value.title} onChange={e => set({ title: e.target.value })} placeholder="Cuán grande es Él" />
+        <Input value={value.title} onChange={e => set({ title: e.target.value })} placeholder="Cuán Grande es Dios (C)" />
       </div>
       <div>
         <Label>Artista (opcional)</Label>
@@ -57,7 +58,7 @@ export default function SongFormFields({ value, onChange }: Props) {
       <div>
         <Label>Letra con acordes</Label>
         <p className="text-xs text-muted-foreground mb-2">
-          Acordes en una línea sola arriba de la letra. Escribí "Coro", "Estrofa", "Verso", "Pre-coro" o "Puente" como etiquetas en su propia línea para resaltarlas en negrita.
+          Acordes en una línea sola arriba de la letra. Las etiquetas <b>Coro</b>, <b>Coro 2</b>, <b>Verso</b>, <b>Verso 2</b>, <b>Estrofa</b>, <b>Pre-coro</b>, <b>Puente</b>, <b>Puente 2</b>, etc. se ven en negrita automáticamente.
         </p>
         <Textarea
           rows={14}
@@ -67,6 +68,18 @@ export default function SongFormFields({ value, onChange }: Props) {
           placeholder={"Estrofa\nC            G            Am          F\nCuán grande es Él, cuán grande es Él"}
         />
       </div>
+      {showPreview && (
+        <div>
+          <Label className="text-xs text-muted-foreground">Vista previa en vivo</Label>
+          <SongPreview
+            title={value.title}
+            artist={value.artist}
+            song_key={value.song_key}
+            lyrics={value.lyrics}
+            font={value.font}
+          />
+        </div>
+      )}
     </div>
   );
 }
