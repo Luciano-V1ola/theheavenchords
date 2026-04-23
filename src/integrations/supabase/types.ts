@@ -74,8 +74,10 @@ export type Database = {
         Row: {
           artist: string | null
           created_at: string
+          hidden: boolean
           id: string
           lyrics: string
+          pending_changes: string | null
           proposed_by: string
           reject_reason: string | null
           reviewed_at: string | null
@@ -88,8 +90,10 @@ export type Database = {
         Insert: {
           artist?: string | null
           created_at?: string
+          hidden?: boolean
           id?: string
           lyrics: string
+          pending_changes?: string | null
           proposed_by: string
           reject_reason?: string | null
           reviewed_at?: string | null
@@ -102,8 +106,10 @@ export type Database = {
         Update: {
           artist?: string | null
           created_at?: string
+          hidden?: boolean
           id?: string
           lyrics?: string
+          pending_changes?: string | null
           proposed_by?: string
           reject_reason?: string | null
           reviewed_at?: string | null
@@ -188,6 +194,7 @@ export type Database = {
           added_by: string
           artist: string | null
           created_at: string
+          drawing: Json | null
           global_song_id: string | null
           id: string
           lyrics: string
@@ -201,6 +208,7 @@ export type Database = {
           added_by: string
           artist?: string | null
           created_at?: string
+          drawing?: Json | null
           global_song_id?: string | null
           id?: string
           lyrics: string
@@ -214,6 +222,7 @@ export type Database = {
           added_by?: string
           artist?: string | null
           created_at?: string
+          drawing?: Json | null
           global_song_id?: string | null
           id?: string
           lyrics?: string
@@ -311,6 +320,27 @@ export type Database = {
           },
         ]
       }
+      user_global_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["global_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["global_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["global_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -325,15 +355,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_global_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["global_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_church_member: {
         Args: { _church_id: string; _user_id: string }
         Returns: boolean
       }
       is_global_owner: { Args: { _user_id: string }; Returns: boolean }
+      is_owner_or_mod: { Args: { _user_id: string }; Returns: boolean }
       setlist_church_id: { Args: { _setlist_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "member"
+      global_role: "owner" | "moderator" | "user"
       song_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -463,6 +502,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "member"],
+      global_role: ["owner", "moderator", "user"],
       song_status: ["pending", "approved", "rejected"],
     },
   },
