@@ -165,6 +165,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect }:
       <Card className="p-4 sm:p-6 overflow-x-auto">
         <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
           {lines.map((l, i) => {
+            if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
             if (l.type === "chord") return <div key={i} className="chord-line">{l.text || "\u00A0"}</div>;
             if (l.type === "section") return <div key={i} className="section-line">{l.text}</div>;
             return <div key={i}>{l.text || "\u00A0"}</div>;
