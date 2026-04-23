@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Eye, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, Pencil, Trash2, Brush } from "lucide-react";
 import { toast } from "sonner";
 import SongViewer from "./SongViewer";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
+import DrawingCanvas, { Drawing } from "./DrawingCanvas";
 import type { Setlist } from "./SetlistsView";
 import type { Membership } from "@/hooks/useChurch";
 
@@ -15,11 +16,11 @@ type Item = {
   id: string; setlist_id: string; position: number;
   title: string; artist: string | null; song_key: string; lyrics: string;
   font?: SongFont;
+  drawing?: Drawing | null;
 };
 
 type Props = { church: Membership; setlist: Setlist; onBack: () => void };
 
-// Helpers para fuente embebida en lyrics
 function packLyrics(lyrics: string, font: SongFont | undefined): string {
   const f = font ?? "arial";
   return `[font:${f}]\n${lyrics.replace(/^\[font:(arial|calibri)\]\s*\n?/i, "")}`;
@@ -35,6 +36,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Item | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
+  const [drawingFor, setDrawingFor] = useState<Item | null>(null);
   const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial" });
   const isAdmin = church.role === "admin";
 
@@ -42,14 +44,14 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
     setLoading(true);
     const { data, error } = await supabase
       .from("setlist_songs")
-      .select("id, setlist_id, position, title, artist, song_key, lyrics")
+      .select("id, setlist_id, position, title, artist, song_key, lyrics, drawing")
       .eq("setlist_id", setlist.id)
       .order("position", { ascending: true })
       .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
-    else setItems((data ?? []).map(it => {
+    else setItems((data ?? []).map((it: any) => {
       const { font, clean } = unpackLyrics(it.lyrics);
-      return { ...it, font, lyrics: clean };
+      return { ...it, font, lyrics: clean, drawing: it.drawing ?? null };
     }));
     setLoading(false);
   };
@@ -79,7 +81,14 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
 
-  // Lista para navegación dentro del visor
+  const saveDrawing = async (d: Drawing) => {
+    if (!drawingFor) return;
+    const { error } = await supabase.from("setlist_songs")
+      .update({ drawing: d as any }).eq("id", drawingFor.id);
+    if (error) toast.error(error.message);
+    else { toast.success("Dibujo guardado"); setDrawingFor(null); load(); }
+  };
+
   const siblings = useMemo(() => items.map(it => ({
     id: it.id, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font,
   })), [items]);
@@ -117,10 +126,16 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         <Card key={it.id} className="p-4 flex items-center gap-3 flex-wrap">
           <div className="flex-1 min-w-[180px]">
             <h4 className="font-semibold">{it.title}</h4>
-            <p className="text-sm text-muted-foreground">{it.artist || "Sin artista"} · Tono: {it.song_key}</p>
+            <p className="text-sm text-muted-foreground">
+              {it.artist || "Sin artista"} · Tono: {it.song_key}
+              {it.drawing?.strokes?.length ? <span className="ml-2 text-primary">· con dibujo</span> : null}
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" onClick={() => setViewing(it)}><Eye className="w-4 h-4 mr-1" /> Ver</Button>
+            <Button size="sm" variant="outline" onClick={() => setDrawingFor(it)} title="Dibujar sobre la partitura">
+              <Brush className="w-4 h-4" />
+            </Button>
             {isAdmin && (
               <>
                 <Button size="sm" variant="outline" onClick={() => startEdit(it)}><Pencil className="w-4 h-4" /></Button>
@@ -154,6 +169,20 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
             <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
             <Button onClick={saveEdit}>Guardar</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lienzo de dibujo sobre la canción */}
+      <Dialog open={!!drawingFor} onOpenChange={o => !o && setDrawingFor(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Dibujar sobre "{drawingFor?.title}"</DialogTitle></DialogHeader>
+          {drawingFor && (
+            <DrawingCanvas
+              initial={drawingFor.drawing ?? null}
+              onSave={saveDrawing}
+              onClose={() => setDrawingFor(null)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
