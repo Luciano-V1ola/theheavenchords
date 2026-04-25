@@ -146,9 +146,6 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" onClick={() => setViewing(it)}><Eye className="w-4 h-4 mr-1" /> Ver</Button>
-            <Button size="sm" variant="outline" onClick={() => setDrawingFor(it)} title="Dibujar sobre la partitura">
-              <Brush className="w-4 h-4" />
-            </Button>
             {isAdmin && (
               <>
                 <Button size="sm" variant="outline" onClick={() => startEdit(it)}><Pencil className="w-4 h-4" /></Button>
