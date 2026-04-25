@@ -26,6 +26,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import ThemeChoiceDialog from "@/components/ThemeChoiceDialog";
 
 type Tab = "catalog" | "lists" | "review" | "settings";
+type CatalogViewerSong = GlobalSong & { source: "catalog" };
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
@@ -38,7 +39,7 @@ export default function Index() {
   const [openSetlist, setOpenSetlist] = useState<Setlist | null>(null);
   // Visor de catálogo. Es un estado SEPARADO del setlist abierto: garantiza que
   // ver una canción del catálogo nunca te lleve a la versión de una lista.
-  const [viewingGlobal, setViewingGlobal] = useState<GlobalSong | null>(null);
+  const [viewingGlobal, setViewingGlobal] = useState<CatalogViewerSong | null>(null);
   const [globalSiblings, setGlobalSiblings] = useState<GlobalSong[]>([]);
   const [addToList, setAddToList] = useState<GlobalSong | null>(null);
   const [newChurchOpen, setNewChurchOpen] = useState(false);
@@ -194,6 +195,7 @@ export default function Index() {
         {viewingGlobal ? (
           // Visor del CATÁLOGO. Independiente del visor de listas.
           <SongViewer
+            key={`catalog-${viewingGlobal.id}`}
             song={{ ...viewingGlobal, source: "catalog" }}
             siblings={normalizedGlobalSiblings}
             onSelect={(s) => {
