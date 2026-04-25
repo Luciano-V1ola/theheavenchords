@@ -108,6 +108,13 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         }}
         onBack={() => setViewing(null)}
         onEdit={isAdmin ? () => { startEdit(viewing); setViewing(null); } : undefined}
+        canDraw={true}
+        drawing={viewing.drawing ?? null}
+        onSaveDrawing={async (d) => {
+          await saveDrawing(d);
+          // refrescar el item visible con el dibujo nuevo
+          setViewing(v => v ? { ...v, drawing: d } : v);
+        }}
       />
     );
   }
