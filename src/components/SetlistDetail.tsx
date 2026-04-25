@@ -81,16 +81,13 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
 
-  const saveDrawing = async (d: Drawing) => {
-  const saveDrawing = async (d: Drawing, id?: string) => {
-    const targetId = id ?? drawingFor?.id;
-    if (!targetId) return;
+  const saveDrawing = async (d: Drawing, id: string) => {
     const { error } = await supabase.rpc("update_setlist_song_drawing" as any, {
-      _id: targetId,
+      _id: id,
       _drawing: d as any,
     });
     if (error) toast.error(error.message);
-    else { toast.success("Dibujo guardado"); setDrawingFor(null); load(); }
+    else { toast.success("Dibujo guardado"); load(); }
   };
 
   const siblings = useMemo(() => items.map(it => ({
