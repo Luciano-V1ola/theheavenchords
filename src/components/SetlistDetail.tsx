@@ -182,20 +182,6 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* Lienzo de dibujo INLINE: la lista permanece visible arriba.
-          No usamos un Dialog para no ocultar las canciones. */}
-      {drawingFor && (
-        <Card className="p-3 sm:p-4 space-y-2 border-primary">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h3 className="font-semibold">Dibujando sobre: {drawingFor.title}</h3>
-          </div>
-          <DrawingCanvas
-            initial={drawingFor.drawing ?? null}
-            onSave={saveDrawing}
-            onClose={() => setDrawingFor(null)}
-          />
-        </Card>
-      )}
     </div>
   );
 }
