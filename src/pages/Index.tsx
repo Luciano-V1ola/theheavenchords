@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useChurch } from "@/hooks/useChurch";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
@@ -40,7 +40,6 @@ export default function Index() {
   // Visor de catálogo. Es un estado SEPARADO del setlist abierto: garantiza que
   // ver una canción del catálogo nunca te lleve a la versión de una lista.
   const [viewingGlobal, setViewingGlobal] = useState<CatalogViewerSong | null>(null);
-  const [globalSiblings, setGlobalSiblings] = useState<GlobalSong[]>([]);
   const [addToList, setAddToList] = useState<GlobalSong | null>(null);
   const [newChurchOpen, setNewChurchOpen] = useState(false);
   const [newChurchName, setNewChurchName] = useState("");
@@ -59,21 +58,15 @@ export default function Index() {
   }, [user, params, setParams, refresh]);
 
   const [createdChurchId, setCreatedChurchId] = useState<string | null>(null);
-  const normalizedGlobalSiblings = useMemo(
-    () => globalSiblings.map((song) => ({ ...song, source: "catalog" as const })),
-    [globalSiblings]
-  );
 
-  const openCatalogSong = (song: GlobalSong, siblings: GlobalSong[]) => {
+  const openCatalogSong = (song: GlobalSong) => {
     setOpenSetlist(null);
     setTab("catalog");
-    setGlobalSiblings(siblings);
     setViewingGlobal({ ...song, source: "catalog" });
   };
 
   const closeCatalogViewer = () => {
     setViewingGlobal(null);
-    setGlobalSiblings([]);
   };
 
   useEffect(() => {
@@ -197,12 +190,6 @@ export default function Index() {
           <SongViewer
             key={`catalog-${viewingGlobal.id}`}
             song={{ ...viewingGlobal, source: "catalog" }}
-            siblings={normalizedGlobalSiblings}
-            onSelect={(s) => {
-              if (s.source !== "catalog") return;
-              const found = globalSiblings.find((g) => g.id === s.id);
-              if (found) setViewingGlobal({ ...found, source: "catalog" });
-            }}
             onBack={closeCatalogViewer}
           />
         ) : openSetlist && current ? (
