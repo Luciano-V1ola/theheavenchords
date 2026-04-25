@@ -82,9 +82,11 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   };
 
   const saveDrawing = async (d: Drawing) => {
-    if (!drawingFor) return;
+  const saveDrawing = async (d: Drawing, id?: string) => {
+    const targetId = id ?? drawingFor?.id;
+    if (!targetId) return;
     const { error } = await supabase.rpc("update_setlist_song_drawing" as any, {
-      _id: drawingFor.id,
+      _id: targetId,
       _drawing: d as any,
     });
     if (error) toast.error(error.message);
