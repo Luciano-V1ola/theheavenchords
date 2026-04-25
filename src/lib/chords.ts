@@ -69,7 +69,8 @@ export function transposeChordLine(line: string, semitones: number, currentKey =
 
 // Palabras clave de sección que se renderizan en negrita.
 // Acepta variantes con número opcional (Coro 2, Verso2, Puente 3, etc.) y dos puntos opcionales.
-const SECTION_RE = /^\s*(coro|estrofa|verso|pre[\s-]?coro|puente|intro|outro|final|interludio|tag)\s*\d*\s*:?\s*$/i;
+// Case-insensitive (la /i ya cubre FIN/fin, CORO/coro, etc.).
+const SECTION_RE = /^\s*(coro|estrofa|verso|pre[\s-]?coro|puente|intro|outro|final|fin|interludio|tag|bridge|chorus)\s*\d*\s*:?\s*$/i;
 export function isSectionLabel(line: string): boolean {
   return SECTION_RE.test(line);
 }
