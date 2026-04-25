@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useChurch } from "@/hooks/useChurch";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
@@ -58,6 +58,23 @@ export default function Index() {
   }, [user, params, setParams, refresh]);
 
   const [createdChurchId, setCreatedChurchId] = useState<string | null>(null);
+  const normalizedGlobalSiblings = useMemo(
+    () => globalSiblings.map((song) => ({ ...song, source: "catalog" as const })),
+    [globalSiblings]
+  );
+
+  const openCatalogSong = (song: GlobalSong, siblings: GlobalSong[]) => {
+    setOpenSetlist(null);
+    setTab("catalog");
+    setGlobalSiblings(siblings);
+    setViewingGlobal({ ...song, source: "catalog" });
+  };
+
+  const closeCatalogViewer = () => {
+    setViewingGlobal(null);
+    setGlobalSiblings([]);
+  };
+
   useEffect(() => {
     if (!user) { setCreatedChurchId(null); return; }
     supabase.from("churches").select("id").eq("created_by", user.id).maybeSingle()
@@ -177,13 +194,14 @@ export default function Index() {
         {viewingGlobal ? (
           // Visor del CATÁLOGO. Independiente del visor de listas.
           <SongViewer
-            song={viewingGlobal}
-            siblings={globalSiblings}
+            song={{ ...viewingGlobal, source: "catalog" }}
+            siblings={normalizedGlobalSiblings}
             onSelect={(s) => {
-              const found = globalSiblings.find(g => g.id === (s as any).id);
-              if (found) setViewingGlobal(found);
+              if (s.source !== "catalog") return;
+              const found = globalSiblings.find((g) => g.id === s.id);
+              if (found) setViewingGlobal({ ...found, source: "catalog" });
             }}
-            onBack={() => setViewingGlobal(null)}
+            onBack={closeCatalogViewer}
           />
         ) : openSetlist && current ? (
           <SetlistDetail church={current} setlist={openSetlist} onBack={() => setOpenSetlist(null)} />
@@ -201,7 +219,7 @@ export default function Index() {
             <TabsContent value="catalog">
               <GlobalCatalog
                 church={current}
-                onView={(s, siblings) => { setGlobalSiblings(siblings); setViewingGlobal(s); }}
+                onView={openCatalogSong}
                 onAddToSetlist={s => setAddToList(s)}
               />
             </TabsContent>
