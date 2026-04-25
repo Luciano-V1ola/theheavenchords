@@ -110,7 +110,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         canDraw={true}
         drawing={viewing.drawing ?? null}
         onSaveDrawing={async (d) => {
-          await saveDrawing(d);
+          await saveDrawing(d, viewing.id);
           // refrescar el item visible con el dibujo nuevo
           setViewing(v => v ? { ...v, drawing: d } : v);
         }}
