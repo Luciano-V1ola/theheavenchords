@@ -12,6 +12,7 @@ import { SongFont } from "./SongFormFields";
 // Soporta navegación entre canciones (anterior/siguiente y sidebar).
 export type ViewerSong = {
   id?: string;
+  source?: "catalog" | "setlist" | "review";
   title: string;
   artist?: string | null;
   song_key: string;
@@ -78,7 +79,12 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect }:
   };
 
   // Navegación entre canciones del listado
-  const idx = siblings?.findIndex(s => (s.id && song.id ? s.id === song.id : s.title === song.title)) ?? -1;
+  const idx = siblings?.findIndex((s) => {
+    if (s.id && song.id) {
+      return s.id === song.id && (s.source ?? null) === (song.source ?? null);
+    }
+    return s.title === song.title;
+  }) ?? -1;
   const prev = idx > 0 ? siblings![idx - 1] : null;
   const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
 
