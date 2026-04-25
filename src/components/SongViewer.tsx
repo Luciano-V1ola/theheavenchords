@@ -30,6 +30,10 @@ type Props = {
   // Lista opcional de canciones para navegación (anterior/siguiente y sidebar)
   siblings?: ViewerSong[];
   onSelect?: (s: ViewerSong) => void;
+  // Dibujo opcional sobre la partitura (solo dentro de listas de iglesia)
+  drawing?: Drawing | null;
+  canDraw?: boolean;
+  onSaveDrawing?: (d: Drawing) => Promise<void> | void;
 };
 
 // Extrae una línea de metadata "[font:arial]" si existe
@@ -39,11 +43,13 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
   return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
 }
 
-export default function SongViewer({ song, onBack, onEdit, siblings, onSelect }: Props) {
+export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
   const [scrolling, setScrolling] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [drawMode, setDrawMode] = useState(false);
   const scrollRef = useRef<number | null>(null);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
 
   // Datos derivados de la canción (limpia metadata de fuente)
   const { font: embeddedFont, clean } = useMemo(() => extractFont(song.lyrics), [song.lyrics]);
