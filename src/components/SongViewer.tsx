@@ -173,10 +173,15 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             {scrolling ? <><Pause className="w-4 h-4 mr-1" /> Detener</> : <><Play className="w-4 h-4 mr-1" /> Auto-scroll</>}
           </Button>
           <Button size="sm" variant="outline" onClick={copy}><Copy className="w-4 h-4 mr-1" /> Copiar</Button>
+          {canDraw && (
+            <Button size="sm" variant={drawMode ? "default" : "outline"} onClick={() => setDrawMode(d => !d)} title="Dibujar sobre la partitura">
+              <Brush className="w-4 h-4 mr-1" /> {drawMode ? "Dibujando" : "Dibujar"}
+            </Button>
+          )}
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-6 overflow-x-auto">
+      <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
         <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
           {lines.map((l, i) => {
             if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
@@ -185,6 +190,15 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             return <div key={i}>{l.text || "\u00A0"}</div>;
           })}
         </pre>
+        {canDraw && (
+          <SongOverlayCanvas
+            containerRef={sheetRef}
+            initial={drawing ?? null}
+            active={drawMode}
+            onSave={async (d) => { await onSaveDrawing?.(d); setDrawMode(false); }}
+            onExit={() => setDrawMode(false)}
+          />
+        )}
       </Card>
 
       {song.contributor_name !== undefined && (
