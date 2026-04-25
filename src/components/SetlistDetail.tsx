@@ -36,7 +36,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Item | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
-  const [drawingFor, setDrawingFor] = useState<Item | null>(null);
+  // dibujo: ahora se hace dentro del visor (overlay sobre la partitura)
   const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial" });
   const isAdmin = church.role === "admin";
 
