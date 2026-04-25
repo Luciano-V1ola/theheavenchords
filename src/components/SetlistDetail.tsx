@@ -83,8 +83,10 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
 
   const saveDrawing = async (d: Drawing) => {
     if (!drawingFor) return;
-    const { error } = await supabase.from("setlist_songs")
-      .update({ drawing: d as any }).eq("id", drawingFor.id);
+    const { error } = await supabase.rpc("update_setlist_song_drawing" as any, {
+      _id: drawingFor.id,
+      _drawing: d as any,
+    });
     if (error) toast.error(error.message);
     else { toast.success("Dibujo guardado"); setDrawingFor(null); load(); }
   };
