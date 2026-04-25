@@ -24,8 +24,8 @@ export type GlobalSong = {
 
 type Props = {
   church: Membership | null;
-  // Recibe la canción y la lista de "hermanas" para navegar en el visor
-  onView: (s: GlobalSong, siblings: GlobalSong[]) => void;
+  // El catálogo abre una canción aislada, sin navegación de lista.
+  onView: (s: GlobalSong) => void;
   onAddToSetlist: (s: GlobalSong) => void;
 };
 
@@ -250,7 +250,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={() => onView(s, approved)}>
+                <Button size="sm" variant="outline" onClick={() => onView(s)}>
                   <Eye className="w-4 h-4 mr-1" /> Ver
                 </Button>
                 {user && isAdminOfChurch && (
