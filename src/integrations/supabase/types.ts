@@ -368,7 +368,12 @@ export type Database = {
       }
       is_global_owner: { Args: { _user_id: string }; Returns: boolean }
       is_owner_or_mod: { Args: { _user_id: string }; Returns: boolean }
+      resolve_user_id_by_email: { Args: { _email: string }; Returns: string }
       setlist_church_id: { Args: { _setlist_id: string }; Returns: string }
+      update_setlist_song_drawing: {
+        Args: { _drawing: Json; _id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "member"

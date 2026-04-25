@@ -111,33 +111,19 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
 
   // Gestión de moderadores globales (solo Dueño de la app)
   const promoteModerator = async () => {
-    if (!modEmail.trim()) return;
-    // Buscamos el user_id por email mediante profiles + auth join no es posible desde el cliente.
-    // Estrategia: el dueño busca por display_name en profiles si el usuario ya existe, o pedimos
-    // que el target inicie sesión al menos una vez. Como simplificación, intentamos por display_name
-    // con coincidencia por email no es posible — alternativa: buscar perfil por user_id ya conocido
-    // no aplica. Para resolver esto bien, usamos una RPC futura. Por ahora, validamos con profiles.
-    // Estrategia válida: buscar por user_id contra una vista del propio dueño NO funciona.
-    // Implementamos a través de invitations: si el email ya está registrado, podemos ubicarlo.
-    // Para mantenerlo simple y seguro: el usuario objetivo debe estar registrado, y le buscamos
-    // su user_id consultando church_members + invitations matchea su email aceptada.
-    const { data: invMatch } = await supabase.from("invitations")
-      .select("id").eq("email", modEmail.trim().toLowerCase()).limit(1);
-    if (!invMatch || invMatch.length === 0) {
-      toast.error("No encontramos ese email entre usuarios conocidos. Pedile que se registre primero o lo invitás a tu iglesia.");
-      return;
-    }
-    // Intentamos resolver el user_id desde church_members vía email -> auth no se puede;
-    // así que mostramos al dueño la lista de profiles para que elija.
-    const { data: allProfs } = await supabase.from("profiles").select("user_id, display_name");
-    const candidate = (allProfs ?? []).find(p => (p.display_name ?? "").toLowerCase() === modEmail.trim().toLowerCase());
-    let targetId = candidate?.user_id;
+    const email = modEmail.trim().toLowerCase();
+    if (!email) return;
+    const { data: targetId, error: rpcErr } = await supabase.rpc(
+      "resolve_user_id_by_email" as any,
+      { _email: email }
+    );
+    if (rpcErr) return toast.error(rpcErr.message);
     if (!targetId) {
-      toast.error("No pude resolver el usuario por email. Pedile a esa persona su 'nombre de usuario' y usá ese.");
+      toast.error("No encontramos un usuario registrado con ese email.");
       return;
     }
     const { error } = await supabase.from("user_global_roles")
-      .upsert({ user_id: targetId, role: "moderator" }, { onConflict: "user_id" });
+      .upsert({ user_id: targetId as string, role: "moderator" }, { onConflict: "user_id" });
     if (error) return toast.error(error.message);
     toast.success("Moderador asignado");
     setModEmail(""); load();
