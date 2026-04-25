@@ -90,15 +90,17 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   };
 
   const siblings = useMemo(() => items.map(it => ({
-    id: it.id, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font,
+    id: it.id, source: "setlist" as const, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font,
   })), [items]);
 
   if (viewing) {
     return (
       <SongViewer
-        song={viewing}
+        key={`setlist-${setlist.id}-${viewing.id}`}
+        song={{ ...viewing, source: "setlist" }}
         siblings={siblings}
         onSelect={(s) => {
+          if (s.source !== "setlist") return;
           const found = items.find(it => it.id === s.id);
           if (found) setViewing(found);
         }}
