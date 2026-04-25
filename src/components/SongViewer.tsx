@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List } from "lucide-react";
+import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush } from "lucide-react";
 import { toast } from "sonner";
 import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
 import { SongFont } from "./SongFormFields";
+import SongOverlayCanvas from "./SongOverlayCanvas";
+import type { Drawing } from "./DrawingCanvas";
 
 // Visor reutilizable: recibe una canción ya cargada (catálogo global o item de setlist).
 // Soporta navegación entre canciones (anterior/siguiente y sidebar).
@@ -28,6 +30,10 @@ type Props = {
   // Lista opcional de canciones para navegación (anterior/siguiente y sidebar)
   siblings?: ViewerSong[];
   onSelect?: (s: ViewerSong) => void;
+  // Dibujo opcional sobre la partitura (solo dentro de listas de iglesia)
+  drawing?: Drawing | null;
+  canDraw?: boolean;
+  onSaveDrawing?: (d: Drawing) => Promise<void> | void;
 };
 
 // Extrae una línea de metadata "[font:arial]" si existe
@@ -37,11 +43,13 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
   return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
 }
 
-export default function SongViewer({ song, onBack, onEdit, siblings, onSelect }: Props) {
+export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
   const [scrolling, setScrolling] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [drawMode, setDrawMode] = useState(false);
   const scrollRef = useRef<number | null>(null);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
 
   // Datos derivados de la canción (limpia metadata de fuente)
   const { font: embeddedFont, clean } = useMemo(() => extractFont(song.lyrics), [song.lyrics]);
@@ -165,10 +173,15 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect }:
             {scrolling ? <><Pause className="w-4 h-4 mr-1" /> Detener</> : <><Play className="w-4 h-4 mr-1" /> Auto-scroll</>}
           </Button>
           <Button size="sm" variant="outline" onClick={copy}><Copy className="w-4 h-4 mr-1" /> Copiar</Button>
+          {canDraw && (
+            <Button size="sm" variant={drawMode ? "default" : "outline"} onClick={() => setDrawMode(d => !d)} title="Dibujar sobre la partitura">
+              <Brush className="w-4 h-4 mr-1" /> {drawMode ? "Dibujando" : "Dibujar"}
+            </Button>
+          )}
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-6 overflow-x-auto">
+      <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
         <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
           {lines.map((l, i) => {
             if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
@@ -177,6 +190,15 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect }:
             return <div key={i}>{l.text || "\u00A0"}</div>;
           })}
         </pre>
+        {canDraw && (
+          <SongOverlayCanvas
+            containerRef={sheetRef}
+            initial={drawing ?? null}
+            active={drawMode}
+            onSave={async (d) => { await onSaveDrawing?.(d); setDrawMode(false); }}
+            onExit={() => setDrawMode(false)}
+          />
+        )}
       </Card>
 
       {song.contributor_name !== undefined && (

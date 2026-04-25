@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Eye, Pencil, Trash2, Brush } from "lucide-react";
+import { ArrowLeft, Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import SongViewer from "./SongViewer";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
-import DrawingCanvas, { Drawing } from "./DrawingCanvas";
+import type { Drawing } from "./DrawingCanvas";
 import type { Setlist } from "./SetlistsView";
 import type { Membership } from "@/hooks/useChurch";
 
@@ -36,7 +36,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Item | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
-  const [drawingFor, setDrawingFor] = useState<Item | null>(null);
+  // dibujo: ahora se hace dentro del visor (overlay sobre la partitura)
   const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial" });
   const isAdmin = church.role === "admin";
 
@@ -81,14 +81,13 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
 
-  const saveDrawing = async (d: Drawing) => {
-    if (!drawingFor) return;
+  const saveDrawing = async (d: Drawing, id: string) => {
     const { error } = await supabase.rpc("update_setlist_song_drawing" as any, {
-      _id: drawingFor.id,
+      _id: id,
       _drawing: d as any,
     });
     if (error) toast.error(error.message);
-    else { toast.success("Dibujo guardado"); setDrawingFor(null); load(); }
+    else { toast.success("Dibujo guardado"); load(); }
   };
 
   const siblings = useMemo(() => items.map(it => ({
@@ -108,6 +107,13 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         }}
         onBack={() => setViewing(null)}
         onEdit={isAdmin ? () => { startEdit(viewing); setViewing(null); } : undefined}
+        canDraw={true}
+        drawing={viewing.drawing ?? null}
+        onSaveDrawing={async (d) => {
+          await saveDrawing(d, viewing.id);
+          // refrescar el item visible con el dibujo nuevo
+          setViewing(v => v ? { ...v, drawing: d } : v);
+        }}
       />
     );
   }
@@ -137,9 +143,6 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" onClick={() => setViewing(it)}><Eye className="w-4 h-4 mr-1" /> Ver</Button>
-            <Button size="sm" variant="outline" onClick={() => setDrawingFor(it)} title="Dibujar sobre la partitura">
-              <Brush className="w-4 h-4" />
-            </Button>
             {isAdmin && (
               <>
                 <Button size="sm" variant="outline" onClick={() => startEdit(it)}><Pencil className="w-4 h-4" /></Button>
@@ -176,20 +179,6 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* Lienzo de dibujo INLINE: la lista permanece visible arriba.
-          No usamos un Dialog para no ocultar las canciones. */}
-      {drawingFor && (
-        <Card className="p-3 sm:p-4 space-y-2 border-primary">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h3 className="font-semibold">Dibujando sobre: {drawingFor.title}</h3>
-          </div>
-          <DrawingCanvas
-            initial={drawingFor.drawing ?? null}
-            onSave={saveDrawing}
-            onClose={() => setDrawingFor(null)}
-          />
-        </Card>
-      )}
     </div>
   );
 }
