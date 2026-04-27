@@ -43,6 +43,62 @@ export function transposeChord(chord: string, semitones: number, currentKey = "C
   return newRoot + suffix + newBass;
 }
 
+// ===== Sistema de grados (números romanos) =====
+// Mayor: I ii iii IV V vi vii°  — Menor (relativa): i ii° III iv v VI VII
+const MAJOR_DEGREES = ["I","bII","II","bIII","III","IV","#IV","V","bVI","VI","bVII","VII"];
+
+// Convierte un acorde individual a su grado relativo al tono actual
+export function chordToDegree(chord: string, currentKey: string): string {
+  const m = chord.match(/^([A-G][#b]?)([^/]*)(?:\/([A-G][#b]?))?$/);
+  if (!m) return chord;
+  const [, root, suffix, bass] = m;
+  const rootIdx = noteIndex(root);
+  const keyIdx = noteIndex(currentKey);
+  if (rootIdx === -1 || keyIdx === -1) return chord;
+  const interval = (rootIdx - keyIdx + 12) % 12;
+  let degree = MAJOR_DEGREES[interval] ?? "?";
+
+  // Detectar calidad: minor (m, min) sin confundir con maj
+  const isMinor = /^m(?!aj)/.test(suffix) || /^min/i.test(suffix);
+  const isDim = /^(dim|°|o)/i.test(suffix);
+  const isAug = /^(aug|\+)/i.test(suffix);
+
+  if (isMinor) degree = degree.toLowerCase();
+  // Sufijo extra: 7, maj7, sus, add9, etc. (sin la "m" inicial)
+  let extra = suffix;
+  if (isMinor) extra = extra.replace(/^m(in)?/i, "");
+  if (isDim) { degree = degree.toLowerCase() + "°"; extra = extra.replace(/^(dim|°|o)/i, ""); }
+  if (isAug) { degree = degree + "+"; extra = extra.replace(/^(aug|\+)/i, ""); }
+
+  let bassPart = "";
+  if (bass) {
+    const bi = noteIndex(bass);
+    if (bi !== -1) {
+      const bInt = (bi - keyIdx + 12) % 12;
+      bassPart = "/" + MAJOR_DEGREES[bInt];
+    }
+  }
+  return degree + extra + bassPart;
+}
+
+// Convierte una línea de acordes a grados, preservando alineación
+export function chordLineToDegrees(line: string, currentKey: string, mode: "degrees" | "both" = "degrees", semitones = 0): string {
+  let out = "";
+  let i = 0;
+  while (i < line.length) {
+    if (line[i] === " ") { out += " "; i++; continue; }
+    let word = "";
+    while (i < line.length && line[i] !== " ") { word += line[i]; i++; }
+    const transposed = transposeChord(word, semitones, currentKey);
+    const deg = chordToDegree(transposed, currentKey);
+    const replacement = mode === "both" ? `${transposed}(${deg})` : deg;
+    out += replacement;
+    const diff = word.length - replacement.length;
+    if (diff > 0) out += " ".repeat(diff);
+  }
+  return out;
+}
+
 // Línea de solo acordes (todas sus palabras parecen acordes)
 export function isChordLine(line: string): boolean {
   const words = line.trim().split(/\s+/).filter(Boolean);
