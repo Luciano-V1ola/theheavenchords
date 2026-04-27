@@ -36,6 +36,8 @@ type Props = {
   drawing?: Drawing | null;
   canDraw?: boolean;
   onSaveDrawing?: (d: Drawing) => Promise<void> | void;
+  // Si se provee, persiste el cambio de tono (solo para listas)
+  onChangeKey?: (newKey: string) => Promise<void> | void;
 };
 
 // Extrae una línea de metadata "[font:arial]" si existe
