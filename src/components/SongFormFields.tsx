@@ -12,6 +12,9 @@ export const FONT_OPTIONS: { value: SongFont; label: string }[] = [
   { value: "calibri", label: "Calibri" },
 ];
 
+// Compases comunes (sugerencias rápidas)
+export const TIME_SIGNATURE_OPTIONS = ["4/4", "3/4", "6/8", "2/4", "12/8", "5/4"];
+
 // Campos compartidos para crear/editar una canción (catálogo global o item de setlist)
 export type SongFields = {
   title: string;
@@ -19,6 +22,8 @@ export type SongFields = {
   song_key: string;
   lyrics: string;
   font?: SongFont;
+  bpm?: number | null;
+  time_signature?: string | null;
 };
 
 type Props = { value: SongFields; onChange: (v: SongFields) => void; showPreview?: boolean };
@@ -51,6 +56,36 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               {FONT_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>BPM (opcional)</Label>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={20}
+            max={400}
+            value={value.bpm ?? ""}
+            onChange={e => {
+              const v = e.target.value;
+              set({ bpm: v === "" ? null : Math.max(0, Math.min(400, Number(v))) });
+            }}
+            placeholder="120"
+          />
+        </div>
+        <div>
+          <Label>Compás (opcional)</Label>
+          <Select
+            value={value.time_signature ?? "none"}
+            onValueChange={v => set({ time_signature: v === "none" ? null : v })}
+          >
+            <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">—</SelectItem>
+              {TIME_SIGNATURE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
