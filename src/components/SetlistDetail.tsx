@@ -122,8 +122,11 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         drawing={viewing.drawing ?? null}
         onSaveDrawing={async (d) => {
           await saveDrawing(d, viewing.id);
-          // refrescar el item visible con el dibujo nuevo
           setViewing(v => v ? { ...v, drawing: d } : v);
+        }}
+        onChangeKey={async (k) => {
+          await saveKey(viewing.id, k);
+          setViewing(v => v ? { ...v, song_key: k } : v);
         }}
       />
     );
