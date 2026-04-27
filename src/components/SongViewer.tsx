@@ -47,8 +47,9 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
   return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
 }
 
-export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing }: Props) {
+export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing, onChangeKey }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
+  const [displayMode, setDisplayMode] = useState<"chords" | "degrees" | "both">("chords");
   const [scrolling, setScrolling] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
