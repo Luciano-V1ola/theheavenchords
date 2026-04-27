@@ -94,6 +94,13 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
     else { toast.success("Dibujo guardado"); load(); }
   };
 
+  // Persiste el cambio de tono en la lista (solo afecta a esta iglesia)
+  const saveKey = async (id: string, newKey: string) => {
+    const { error } = await supabase.from("setlist_songs").update({ song_key: newKey } as any).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setItems(prev => prev.map(it => it.id === id ? { ...it, song_key: newKey } : it));
+  };
+
   const siblings = useMemo(() => items.map(it => ({
     id: it.id, source: "setlist" as const, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font, bpm: it.bpm, time_signature: it.time_signature,
   })), [items]);
