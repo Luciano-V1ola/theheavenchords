@@ -20,6 +20,8 @@ export type GlobalSong = {
   contributor_name?: string | null;
   font?: SongFont | null;
   hidden?: boolean;
+  bpm?: number | null;
+  time_signature?: string | null;
 };
 
 type Props = {
@@ -30,7 +32,7 @@ type Props = {
 };
 
 const DRAFT_KEY = "globalCatalog.proposeDraft";
-const emptyDraft: SongFields = { title: "", artist: "", song_key: "C", lyrics: "", font: "arial" };
+const emptyDraft: SongFields = { title: "", artist: "", song_key: "C", lyrics: "", font: "arial", bpm: null, time_signature: null };
 
 // Helpers para guardar/leer la fuente embebida en la primer línea de lyrics
 function packLyrics(lyrics: string, font: SongFont | undefined): string {
@@ -70,7 +72,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     // gracias a la política RLS sobre canciones aprobadas no ocultas.
     const { data, error } = await supabase
       .from("global_songs")
-      .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden")
+      .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden, bpm, time_signature")
       .order("title");
     if (error) { toast.error(error.message); setLoading(false); return; }
 
@@ -106,7 +108,9 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       lyrics: packLyrics(draft.lyrics, draft.font),
       proposed_by: user.id,
       status: "pending",
-    });
+      bpm: draft.bpm ?? null,
+      time_signature: draft.time_signature ?? null,
+    } as any);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Propuesta enviada para revisión");
@@ -123,7 +127,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
   };
 
   const startEdit = (s: GlobalSong) => {
-    setEditDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics, font: s.font ?? "arial" });
+    setEditDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics, font: s.font ?? "arial", bpm: s.bpm ?? null, time_signature: s.time_signature ?? null });
     setEditing(s);
   };
 
@@ -136,6 +140,8 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       artist: editDraft.artist.trim() || null,
       song_key: editDraft.song_key,
       lyrics: packLyrics(editDraft.lyrics, editDraft.font),
+      bpm: editDraft.bpm ?? null,
+      time_signature: editDraft.time_signature ?? null,
     };
     if (isModerator && !isOwner) {
       patch.hidden = true;

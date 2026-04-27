@@ -19,6 +19,8 @@ type Item = {
   status: "pending" | "approved" | "rejected"; proposed_by: string; created_at: string;
   hidden: boolean; pending_changes: string | null;
   font?: SongFont;
+  bpm?: number | null;
+  time_signature?: string | null;
 };
 
 function packLyrics(lyrics: string, font: SongFont | undefined): string {
@@ -41,7 +43,7 @@ export default function OwnerReview() {
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Item | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
-  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial" });
+  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial", bpm: null, time_signature: null });
   const [rejectFor, setRejectFor] = useState<Item | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
@@ -49,7 +51,7 @@ export default function OwnerReview() {
     setLoading(true);
     const { data, error } = await supabase
       .from("global_songs")
-      .select("id, title, artist, song_key, lyrics, status, proposed_by, created_at, hidden, pending_changes")
+      .select("id, title, artist, song_key, lyrics, status, proposed_by, created_at, hidden, pending_changes, bpm, time_signature")
       .or("status.eq.pending,hidden.eq.true")
       .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
@@ -99,7 +101,7 @@ export default function OwnerReview() {
   };
 
   const startEdit = (s: Item) => {
-    setDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics, font: s.font ?? "arial" });
+    setDraft({ title: s.title, artist: s.artist ?? "", song_key: s.song_key, lyrics: s.lyrics, font: s.font ?? "arial", bpm: s.bpm ?? null, time_signature: s.time_signature ?? null });
     setEditing(s);
   };
 
@@ -110,7 +112,9 @@ export default function OwnerReview() {
       artist: draft.artist.trim() || null,
       song_key: draft.song_key,
       lyrics: packLyrics(draft.lyrics, draft.font),
-    }).eq("id", editing.id);
+      bpm: draft.bpm ?? null,
+      time_signature: draft.time_signature ?? null,
+    } as any).eq("id", editing.id);
     if (error) toast.error(error.message);
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
