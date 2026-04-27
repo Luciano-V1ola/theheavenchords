@@ -21,6 +21,8 @@ export type ViewerSong = {
   lyrics: string;
   font?: SongFont | null;
   contributor_name?: string | null;
+  bpm?: number | null;
+  time_signature?: string | null;
 };
 
 type Props = {
@@ -135,6 +137,12 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
           {/* Título grande */}
           <h2 className={`font-bold text-xl sm:text-2xl truncate ${fontClass}`}>{song.title}</h2>
           {song.artist && <p className="text-sm text-muted-foreground truncate">{song.artist}</p>}
+          {(song.bpm || song.time_signature) && (
+            <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+              {song.bpm ? <span><b className="text-foreground">BPM:</b> {song.bpm}</span> : null}
+              {song.time_signature ? <span><b className="text-foreground">Compás:</b> {song.time_signature}</span> : null}
+            </div>
+          )}
         </div>
 
         {onEdit && <Button variant="outline" size="sm" onClick={onEdit}><Pencil className="w-4 h-4" /></Button>}
