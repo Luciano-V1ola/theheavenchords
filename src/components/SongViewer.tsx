@@ -36,6 +36,8 @@ type Props = {
   drawing?: Drawing | null;
   canDraw?: boolean;
   onSaveDrawing?: (d: Drawing) => Promise<void> | void;
+  // Si se provee, persiste el cambio de tono (solo para listas)
+  onChangeKey?: (newKey: string) => Promise<void> | void;
 };
 
 // Extrae una línea de metadata "[font:arial]" si existe
@@ -45,8 +47,9 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
   return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
 }
 
-export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing }: Props) {
+export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing, onChangeKey }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
+  const [displayMode, setDisplayMode] = useState<"chords" | "degrees" | "both">("chords");
   const [scrolling, setScrolling] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
@@ -75,10 +78,17 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   }, [scrolling]);
 
   const semitones = noteIndex(currentKey) - noteIndex(song.song_key);
-  const lines = renderLines(clean, semitones, currentKey);
+  const lines = renderLines(clean, semitones, currentKey, displayMode);
+
+  // Cambia el tono y, si corresponde, lo persiste (listas)
+  const changeKey = (k: string) => {
+    setCurrentKey(k);
+    onChangeKey?.(k);
+  };
   const transpose = (n: number) => {
     const idx = noteIndex(currentKey);
-    setCurrentKey(KEY_OPTIONS.find(k => noteIndex(k) === ((idx + n + 12) % 12)) ?? KEY_OPTIONS[(idx + n + 12) % 12]);
+    const newKey = KEY_OPTIONS.find(k => noteIndex(k) === ((idx + n + 12) % 12)) ?? KEY_OPTIONS[(idx + n + 12) % 12];
+    changeKey(newKey);
   };
 
   const copy = async () => {
@@ -163,11 +173,11 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
       )}
 
       <Card className="p-3 flex flex-wrap items-center gap-2 justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button size="icon" variant="outline" onClick={() => transpose(-1)}><Minus className="w-4 h-4" /></Button>
           <div className="flex items-center gap-2">
             <span className="text-sm">Tono:</span>
-            <Select value={currentKey} onValueChange={setCurrentKey}>
+            <Select value={currentKey} onValueChange={changeKey}>
               <SelectTrigger className="w-24 h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {KEY_OPTIONS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
@@ -175,6 +185,17 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             </Select>
           </div>
           <Button size="icon" variant="outline" onClick={() => transpose(1)}><Plus className="w-4 h-4" /></Button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Ver:</span>
+            <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as any)}>
+              <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="chords">Acordes</SelectItem>
+                <SelectItem value="degrees">Grados</SelectItem>
+                <SelectItem value="both">Ambos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => setScrolling(s => !s)}>
