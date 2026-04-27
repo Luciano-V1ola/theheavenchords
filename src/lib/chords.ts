@@ -146,14 +146,18 @@ export function isTitleLine(line: string, idx: number): boolean {
 }
 
 // Devuelve la letra completa con cada línea ya transpuesta + flag chord/text/section/title
-export function renderLines(lyrics: string, semitones: number, currentKey = "C") {
+// displayMode: "chords" (default), "degrees", "both"
+export function renderLines(lyrics: string, semitones: number, currentKey = "C", displayMode: "chords" | "degrees" | "both" = "chords") {
   const raw = lyrics.split("\n");
   return raw.map((line, idx) => {
     if (isTitleLine(line, idx)) {
       return { type: "title" as const, text: line };
     }
     if (isChordLine(line)) {
-      return { type: "chord" as const, text: transposeChordLine(line, semitones, currentKey) };
+      const text = displayMode === "chords"
+        ? transposeChordLine(line, semitones, currentKey)
+        : chordLineToDegrees(line, currentKey, displayMode, semitones);
+      return { type: "chord" as const, text };
     }
     if (isSectionLabel(line)) {
       return { type: "section" as const, text: line };
