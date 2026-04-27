@@ -173,11 +173,11 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
       )}
 
       <Card className="p-3 flex flex-wrap items-center gap-2 justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button size="icon" variant="outline" onClick={() => transpose(-1)}><Minus className="w-4 h-4" /></Button>
           <div className="flex items-center gap-2">
             <span className="text-sm">Tono:</span>
-            <Select value={currentKey} onValueChange={setCurrentKey}>
+            <Select value={currentKey} onValueChange={changeKey}>
               <SelectTrigger className="w-24 h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {KEY_OPTIONS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
@@ -185,6 +185,17 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             </Select>
           </div>
           <Button size="icon" variant="outline" onClick={() => transpose(1)}><Plus className="w-4 h-4" /></Button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Ver:</span>
+            <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as any)}>
+              <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="chords">Acordes</SelectItem>
+                <SelectItem value="degrees">Grados</SelectItem>
+                <SelectItem value="both">Ambos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => setScrolling(s => !s)}>
