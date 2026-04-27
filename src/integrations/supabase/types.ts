@@ -73,6 +73,7 @@ export type Database = {
       global_songs: {
         Row: {
           artist: string | null
+          bpm: number | null
           created_at: string
           hidden: boolean
           id: string
@@ -84,11 +85,13 @@ export type Database = {
           reviewed_by: string | null
           song_key: string
           status: Database["public"]["Enums"]["song_status"]
+          time_signature: string | null
           title: string
           updated_at: string
         }
         Insert: {
           artist?: string | null
+          bpm?: number | null
           created_at?: string
           hidden?: boolean
           id?: string
@@ -100,11 +103,13 @@ export type Database = {
           reviewed_by?: string | null
           song_key?: string
           status?: Database["public"]["Enums"]["song_status"]
+          time_signature?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           artist?: string | null
+          bpm?: number | null
           created_at?: string
           hidden?: boolean
           id?: string
@@ -116,6 +121,7 @@ export type Database = {
           reviewed_by?: string | null
           song_key?: string
           status?: Database["public"]["Enums"]["song_status"]
+          time_signature?: string | null
           title?: string
           updated_at?: string
         }
@@ -193,6 +199,7 @@ export type Database = {
         Row: {
           added_by: string
           artist: string | null
+          bpm: number | null
           created_at: string
           drawing: Json | null
           global_song_id: string | null
@@ -201,12 +208,14 @@ export type Database = {
           position: number
           setlist_id: string
           song_key: string
+          time_signature: string | null
           title: string
           updated_at: string
         }
         Insert: {
           added_by: string
           artist?: string | null
+          bpm?: number | null
           created_at?: string
           drawing?: Json | null
           global_song_id?: string | null
@@ -215,12 +224,14 @@ export type Database = {
           position?: number
           setlist_id: string
           song_key?: string
+          time_signature?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           added_by?: string
           artist?: string | null
+          bpm?: number | null
           created_at?: string
           drawing?: Json | null
           global_song_id?: string | null
@@ -229,6 +240,7 @@ export type Database = {
           position?: number
           setlist_id?: string
           song_key?: string
+          time_signature?: string | null
           title?: string
           updated_at?: string
         }

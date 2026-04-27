@@ -45,7 +45,9 @@ export default function AddToSetlistDialog({ church, song, onClose }: Props) {
       song_key: song.song_key,
       lyrics: lyricsToStore,
       added_by: user.id,
-    });
+      bpm: song.bpm ?? null,
+      time_signature: song.time_signature ?? null,
+    } as any);
     setSaving(false);
     if (error) toast.error(error.message);
     else { toast.success("Agregada a la lista"); onClose(); }

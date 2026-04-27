@@ -17,6 +17,8 @@ type Item = {
   title: string; artist: string | null; song_key: string; lyrics: string;
   font?: SongFont;
   drawing?: Drawing | null;
+  bpm?: number | null;
+  time_signature?: string | null;
 };
 
 type Props = { church: Membership; setlist: Setlist; onBack: () => void };
@@ -37,21 +39,21 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   const [viewing, setViewing] = useState<Item | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
   // dibujo: ahora se hace dentro del visor (overlay sobre la partitura)
-  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial" });
+  const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial", bpm: null, time_signature: null });
   const isAdmin = church.role === "admin";
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("setlist_songs")
-      .select("id, setlist_id, position, title, artist, song_key, lyrics, drawing")
+      .select("id, setlist_id, position, title, artist, song_key, lyrics, drawing, bpm, time_signature")
       .eq("setlist_id", setlist.id)
       .order("position", { ascending: true })
       .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
     else setItems((data ?? []).map((it: any) => {
       const { font, clean } = unpackLyrics(it.lyrics);
-      return { ...it, font, lyrics: clean, drawing: it.drawing ?? null };
+      return { ...it, font, lyrics: clean, drawing: it.drawing ?? null, bpm: it.bpm ?? null, time_signature: it.time_signature ?? null };
     }));
     setLoading(false);
   };
@@ -65,7 +67,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   };
 
   const startEdit = (it: Item) => {
-    setDraft({ title: it.title, artist: it.artist ?? "", song_key: it.song_key, lyrics: it.lyrics, font: it.font ?? "arial" });
+    setDraft({ title: it.title, artist: it.artist ?? "", song_key: it.song_key, lyrics: it.lyrics, font: it.font ?? "arial", bpm: it.bpm ?? null, time_signature: it.time_signature ?? null });
     setEditing(it);
   };
 
@@ -76,7 +78,9 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
       artist: draft.artist.trim() || null,
       song_key: draft.song_key,
       lyrics: packLyrics(draft.lyrics, draft.font),
-    }).eq("id", editing.id);
+      bpm: draft.bpm ?? null,
+      time_signature: draft.time_signature ?? null,
+    } as any).eq("id", editing.id);
     if (error) toast.error(error.message);
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
@@ -91,7 +95,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   };
 
   const siblings = useMemo(() => items.map(it => ({
-    id: it.id, source: "setlist" as const, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font,
+    id: it.id, source: "setlist" as const, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font, bpm: it.bpm, time_signature: it.time_signature,
   })), [items]);
 
   if (viewing) {

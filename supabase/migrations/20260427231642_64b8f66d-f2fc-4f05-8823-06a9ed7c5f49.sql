@@ -1,0 +1,2 @@
+ALTER TABLE public.global_songs ADD COLUMN IF NOT EXISTS bpm integer, ADD COLUMN IF NOT EXISTS time_signature text;
+ALTER TABLE public.setlist_songs ADD COLUMN IF NOT EXISTS bpm integer, ADD COLUMN IF NOT EXISTS time_signature text;
