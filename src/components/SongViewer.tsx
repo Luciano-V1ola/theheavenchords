@@ -78,10 +78,17 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   }, [scrolling]);
 
   const semitones = noteIndex(currentKey) - noteIndex(song.song_key);
-  const lines = renderLines(clean, semitones, currentKey);
+  const lines = renderLines(clean, semitones, currentKey, displayMode);
+
+  // Cambia el tono y, si corresponde, lo persiste (listas)
+  const changeKey = (k: string) => {
+    setCurrentKey(k);
+    onChangeKey?.(k);
+  };
   const transpose = (n: number) => {
     const idx = noteIndex(currentKey);
-    setCurrentKey(KEY_OPTIONS.find(k => noteIndex(k) === ((idx + n + 12) % 12)) ?? KEY_OPTIONS[(idx + n + 12) % 12]);
+    const newKey = KEY_OPTIONS.find(k => noteIndex(k) === ((idx + n + 12) % 12)) ?? KEY_OPTIONS[(idx + n + 12) % 12];
+    changeKey(newKey);
   };
 
   const copy = async () => {
