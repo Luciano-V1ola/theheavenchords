@@ -49,7 +49,7 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
 
 export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing, onChangeKey }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
-  const [displayMode, setDisplayMode] = useState<"chords" | "degrees" | "both">("chords");
+  const [displayMode, setDisplayMode] = useState<"chords" | "degrees">("chords");
   const [scrolling, setScrolling] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
@@ -188,11 +188,10 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
           <div className="flex items-center gap-2">
             <span className="text-sm">Ver:</span>
             <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as any)}>
-              <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="chords">Acordes</SelectItem>
                 <SelectItem value="degrees">Grados</SelectItem>
-                <SelectItem value="both">Ambos</SelectItem>
               </SelectContent>
             </Select>
           </div>
