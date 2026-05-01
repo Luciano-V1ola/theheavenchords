@@ -44,38 +44,52 @@ export function transposeChord(chord: string, semitones: number, currentKey = "C
 }
 
 // ===== Sistema de grados (números romanos) =====
-// Mayor: I ii iii IV V vi vii°  — Menor (relativa): i ii° III iv v VI VII
+// Grados diatónicos en mayor por semitono desde la tónica
 const MAJOR_DEGREES = ["I","bII","II","bIII","III","IV","#IV","V","bVI","VI","bVII","VII"];
 
-// Convierte un acorde individual a su grado relativo al tono actual
+// Convierte un acorde individual a su grado relativo al tono actual.
+// Mantiene la calidad del acorde: F=IV, Fm=IVm, G7=V7, Gsus4=Vsus4, Cmaj7=Imaj7,
+// Am7=vim7, Bdim=vii°, Eaug=III+, G/B=V/VII, Bb=bVII, etc.
 export function chordToDegree(chord: string, currentKey: string): string {
   const m = chord.match(/^([A-G][#b]?)([^/]*)(?:\/([A-G][#b]?))?$/);
   if (!m) return chord;
-  const [, root, suffix, bass] = m;
+  const [, root, suffix = "", bass] = m;
   const rootIdx = noteIndex(root);
   const keyIdx = noteIndex(currentKey);
   if (rootIdx === -1 || keyIdx === -1) return chord;
-  const interval = (rootIdx - keyIdx + 12) % 12;
-  let degree = MAJOR_DEGREES[interval] ?? "?";
 
-  // Detectar calidad: minor (m, min) sin confundir con maj
-  const isMinor = /^m(?!aj)/.test(suffix) || /^min/i.test(suffix);
-  const isDim = /^(dim|°|o)/i.test(suffix);
+  const interval = (rootIdx - keyIdx + 12) % 12;
+  let degree = MAJOR_DEGREES[interval];
+  if (!degree) return chord;
+
+  // Detectar calidades especiales (orden importa: maj antes que m)
+  const isMaj7Like = /^(maj|Maj|M(?=[0-9]))/.test(suffix); // maj7, M7
+  const isMinor = !isMaj7Like && /^(m(?!aj)|min)/.test(suffix);
+  const isDim = /^(dim|°|o(?![a-z]))/i.test(suffix);
   const isAug = /^(aug|\+)/i.test(suffix);
 
-  if (isMinor) degree = degree.toLowerCase();
-  // Sufijo extra: 7, maj7, sus, add9, etc. (sin la "m" inicial)
   let extra = suffix;
-  if (isMinor) extra = extra.replace(/^m(in)?/i, "");
-  if (isDim) { degree = degree.toLowerCase() + "°"; extra = extra.replace(/^(dim|°|o)/i, ""); }
-  if (isAug) { degree = degree + "+"; extra = extra.replace(/^(aug|\+)/i, ""); }
+  if (isDim) {
+    // vii° en minúscula con símbolo
+    degree = degree.toLowerCase() + "°";
+    extra = extra.replace(/^(dim|°|o)/i, "");
+  } else if (isAug) {
+    degree = degree + "+";
+    extra = extra.replace(/^(aug|\+)/i, "");
+  } else if (isMinor) {
+    // Quitamos sólo la "m"/"min" inicial; conservamos lo demás (7, 9, sus, etc.)
+    degree = degree.toLowerCase();
+    extra = extra.replace(/^(min|m)/, "");
+  }
+  // Para mayor con sufijos (7, maj7, sus4, add9...) conservamos extra tal cual
 
   let bassPart = "";
   if (bass) {
     const bi = noteIndex(bass);
     if (bi !== -1) {
       const bInt = (bi - keyIdx + 12) % 12;
-      bassPart = "/" + MAJOR_DEGREES[bInt];
+      const bDeg = MAJOR_DEGREES[bInt];
+      if (bDeg) bassPart = "/" + bDeg;
     }
   }
   return degree + extra + bassPart;
