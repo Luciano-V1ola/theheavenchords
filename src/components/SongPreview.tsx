@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { renderLines, noteIndex } from "@/lib/chords";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { renderLines } from "@/lib/chords";
 import { SongFont } from "./SongFormFields";
 
 // Vista previa en vivo de una canción tal como se verá publicada.
-// Usa la misma lógica de render que SongViewer.
+// Permite alternar entre Acordes y Grados directamente desde el editor.
 type Props = {
   title: string;
   artist?: string;
@@ -15,16 +16,30 @@ type Props = {
 
 export default function SongPreview({ title, artist, song_key, lyrics, font }: Props) {
   const fontClass = (font ?? "arial") === "calibri" ? "font-calibri" : "font-arial";
+  const [displayMode, setDisplayMode] = useState<"chords" | "degrees">("chords");
   // Sin transposición: previsualizamos en el tono original
-  const lines = useMemo(() => renderLines(lyrics, 0, song_key), [lyrics, song_key]);
-  // Validamos que noteIndex no rompa con tonos vacíos
-  void noteIndex;
+  const lines = useMemo(
+    () => renderLines(lyrics, 0, song_key, displayMode, song_key),
+    [lyrics, song_key, displayMode],
+  );
 
   return (
     <Card className="p-3 sm:p-4 overflow-x-auto">
-      <div className="mb-2">
-        <h3 className={`font-bold text-lg ${fontClass}`}>{title || "Sin título"}</h3>
-        {artist && <p className="text-xs text-muted-foreground">{artist} · Tono: {song_key}</p>}
+      <div className="mb-2 flex items-start justify-between gap-2 flex-wrap">
+        <div className="min-w-0">
+          <h3 className={`font-bold text-lg ${fontClass} truncate`}>{title || "Sin título"}</h3>
+          {artist && <p className="text-xs text-muted-foreground truncate">{artist} · Tono: {song_key}</p>}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs text-muted-foreground">Ver:</span>
+          <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as "chords" | "degrees")}>
+            <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="chords">Acordes</SelectItem>
+              <SelectItem value="degrees">Grados</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <pre className={`${fontClass} text-sm sm:text-base leading-relaxed whitespace-pre`}>
         {lines.map((l, i) => {
