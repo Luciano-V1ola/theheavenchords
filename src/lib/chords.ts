@@ -198,12 +198,21 @@ export function chordLineToDegrees(line: string, currentKey: string, mode: "degr
   return out;
 }
 
-// Línea de solo acordes (todas sus palabras parecen acordes)
+// Línea de solo acordes (todas sus palabras parecen acordes O grados romanos)
 export function isChordLine(line: string): boolean {
   const words = line.trim().split(/\s+/).filter(Boolean);
   if (!words.length) return false;
   const re = /^[A-G][#b]?[a-zA-Z0-9]*(?:\/[A-G][#b]?)?$/;
-  return words.every(w => re.test(w));
+  return words.every(w => re.test(w) || ROMAN_RE.test(w));
+}
+
+// ¿La línea está escrita en grados? (al menos un token romano y ninguno claramente de letra de acorde extraña)
+export function isDegreeLine(line: string): boolean {
+  const words = line.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return false;
+  const hasRoman = words.some(w => ROMAN_RE.test(w));
+  if (!hasRoman) return false;
+  return words.every(w => ROMAN_RE.test(w));
 }
 
 // Transpone una línea de acordes preservando posiciones (espacios)
