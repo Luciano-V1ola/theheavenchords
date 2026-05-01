@@ -99,6 +99,7 @@ export function chordToDegree(chord: string, currentKey: string): string {
 
 // Convierte una línea de acordes a grados, preservando alineación
 export function chordLineToDegrees(line: string, currentKey: string, mode: "degrees" | "both" = "degrees", semitones = 0): string {
+  const safeKey = currentKey && noteIndex(currentKey) !== -1 ? currentKey : "C";
   let out = "";
   let i = 0;
   while (i < line.length) {
