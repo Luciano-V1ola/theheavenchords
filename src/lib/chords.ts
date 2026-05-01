@@ -55,7 +55,9 @@ export function chordToDegree(chord: string, currentKey: string): string {
   if (!m) return chord;
   const [, root, suffix = "", bass] = m;
   const rootIdx = noteIndex(root);
-  const keyIdx = noteIndex(currentKey);
+  // Fallback defensivo: si el tono no es válido, usamos C para no devolver el acorde sin transformar
+  const safeKey = currentKey && noteIndex(currentKey) !== -1 ? currentKey : "C";
+  const keyIdx = noteIndex(safeKey);
   if (rootIdx === -1 || keyIdx === -1) return chord;
 
   const interval = (rootIdx - keyIdx + 12) % 12;
@@ -97,14 +99,15 @@ export function chordToDegree(chord: string, currentKey: string): string {
 
 // Convierte una línea de acordes a grados, preservando alineación
 export function chordLineToDegrees(line: string, currentKey: string, mode: "degrees" | "both" = "degrees", semitones = 0): string {
+  const safeKey = currentKey && noteIndex(currentKey) !== -1 ? currentKey : "C";
   let out = "";
   let i = 0;
   while (i < line.length) {
     if (line[i] === " ") { out += " "; i++; continue; }
     let word = "";
     while (i < line.length && line[i] !== " ") { word += line[i]; i++; }
-    const transposed = transposeChord(word, semitones, currentKey);
-    const deg = chordToDegree(transposed, currentKey);
+    const transposed = transposeChord(word, semitones, safeKey);
+    const deg = chordToDegree(transposed, safeKey);
     const replacement = mode === "both" ? `${transposed}(${deg})` : deg;
     out += replacement;
     const diff = word.length - replacement.length;
