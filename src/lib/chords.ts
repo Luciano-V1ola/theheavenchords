@@ -106,8 +106,8 @@ export function chordLineToDegrees(line: string, currentKey: string, mode: "degr
     if (line[i] === " ") { out += " "; i++; continue; }
     let word = "";
     while (i < line.length && line[i] !== " ") { word += line[i]; i++; }
-    const transposed = transposeChord(word, semitones, currentKey);
-    const deg = chordToDegree(transposed, currentKey);
+    const transposed = transposeChord(word, semitones, safeKey);
+    const deg = chordToDegree(transposed, safeKey);
     const replacement = mode === "both" ? `${transposed}(${deg})` : deg;
     out += replacement;
     const diff = word.length - replacement.length;
