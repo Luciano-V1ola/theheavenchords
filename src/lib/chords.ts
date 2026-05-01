@@ -255,16 +255,28 @@ export function isTitleLine(line: string, idx: number): boolean {
 
 // Devuelve la letra completa con cada línea ya transpuesta + flag chord/text/section/title
 // displayMode: "chords" (default), "degrees", "both"
-export function renderLines(lyrics: string, semitones: number, currentKey = "C", displayMode: "chords" | "degrees" | "both" = "chords") {
+// `originalKey` es el tono en el que el usuario escribió la letra (canción.song_key).
+// `currentKey` es el tono actualmente mostrado (puede diferir por transposición en vivo).
+// Si una línea está escrita en grados, se interpreta relativa al tono ORIGINAL para obtener acordes absolutos.
+export function renderLines(
+  lyrics: string,
+  semitones: number,
+  currentKey = "C",
+  displayMode: "chords" | "degrees" | "both" = "chords",
+  originalKey?: string,
+) {
+  const baseKey = originalKey && noteIndex(originalKey) !== -1 ? originalKey : currentKey;
   const raw = lyrics.split("\n");
   return raw.map((line, idx) => {
     if (isTitleLine(line, idx)) {
       return { type: "title" as const, text: line };
     }
     if (isChordLine(line)) {
+      // Si la línea fue escrita en grados, primero la pasamos a acordes en el tono ORIGINAL
+      const normalized = isDegreeLine(line) ? degreeLineToChords(line, baseKey) : line;
       const text = displayMode === "chords"
-        ? transposeChordLine(line, semitones, currentKey)
-        : chordLineToDegrees(line, currentKey, displayMode, semitones);
+        ? transposeChordLine(normalized, semitones, currentKey)
+        : chordLineToDegrees(normalized, currentKey, displayMode, semitones);
       return { type: "chord" as const, text };
     }
     if (isSectionLabel(line)) {
