@@ -78,7 +78,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   }, [scrolling]);
 
   const semitones = noteIndex(currentKey) - noteIndex(song.song_key);
-  const lines = renderLines(clean, semitones, currentKey, displayMode);
+  const lines = renderLines(clean, semitones, currentKey, displayMode, song.song_key);
 
   // Cambia el tono y, si corresponde, lo persiste (listas)
   const changeKey = (k: string) => {
