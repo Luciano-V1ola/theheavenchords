@@ -97,6 +97,88 @@ export function chordToDegree(chord: string, currentKey: string): string {
   return degree + extra + bassPart;
 }
 
+// ===== Soporte de entrada en GRADOS (números romanos) =====
+// Permite que el usuario escriba acordes como "I vi IV V" o "bVII", "V/VII", "vii°", "Imaj7", etc.
+// Convertimos un grado a acorde absoluto según la tonalidad indicada.
+const ROMAN_RE = /^(b|#)?(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)([^/]*)(?:\/(b|#)?(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i))?$/;
+
+function romanToInterval(roman: string): number | null {
+  const map: Record<string, number> = {
+    I: 0, II: 2, III: 4, IV: 5, V: 7, VI: 9, VII: 11,
+  };
+  const v = map[roman.toUpperCase()];
+  return v === undefined ? null : v;
+}
+
+export function isDegreeToken(word: string): boolean {
+  return ROMAN_RE.test(word);
+}
+
+// Convierte un grado a acorde absoluto en la tonalidad indicada.
+// Ej: ("V", "C") => "G"; ("vi", "C") => "Am"; ("bVII", "C") => "Bb"; ("V/VII", "C") => "G/B"
+export function degreeToChord(token: string, currentKey: string): string {
+  const m = token.match(ROMAN_RE);
+  if (!m) return token;
+  const [, accRoot, romanRoot, suffix = "", accBass, romanBass] = m;
+  const safeKey = currentKey && noteIndex(currentKey) !== -1 ? currentKey : "C";
+  const keyIdx = noteIndex(safeKey);
+  const useFlats = preferFlats(safeKey);
+
+  const baseInt = romanToInterval(romanRoot);
+  if (baseInt === null) return token;
+  let acc = 0;
+  if (accRoot === "b") acc = -1;
+  else if (accRoot === "#") acc = 1;
+  const rootIdx = (keyIdx + baseInt + acc + 1200) % 12;
+  let rootName = display(NOTES_SHARP[rootIdx], useFlats);
+
+  // ¿mayúscula o minúscula? minúscula => menor por defecto
+  const isLower = romanRoot === romanRoot.toLowerCase();
+
+  // Detectar calidades en el sufijo del grado
+  let outSuffix = suffix;
+  const isDim = /°|dim/i.test(suffix);
+  const isAug = /\+|aug/i.test(suffix);
+
+  if (isDim) {
+    outSuffix = suffix.replace(/°|dim/i, "dim");
+  } else if (isAug) {
+    outSuffix = suffix.replace(/\+|aug/i, "aug");
+  } else if (isLower) {
+    // Insertar "m" al inicio del sufijo si no está
+    if (!/^m(?!aj)/.test(outSuffix)) outSuffix = "m" + outSuffix;
+  }
+
+  let bassPart = "";
+  if (romanBass) {
+    const bInt = romanToInterval(romanBass);
+    if (bInt !== null) {
+      let ba = 0;
+      if (accBass === "b") ba = -1;
+      else if (accBass === "#") ba = 1;
+      const bIdx = (keyIdx + bInt + ba + 1200) % 12;
+      bassPart = "/" + display(NOTES_SHARP[bIdx], useFlats);
+    }
+  }
+  return rootName + outSuffix + bassPart;
+}
+
+// Convierte una línea escrita en grados a acordes absolutos preservando alineación
+export function degreeLineToChords(line: string, currentKey: string): string {
+  let out = "";
+  let i = 0;
+  while (i < line.length) {
+    if (line[i] === " ") { out += " "; i++; continue; }
+    let word = "";
+    while (i < line.length && line[i] !== " ") { word += line[i]; i++; }
+    const t = isDegreeToken(word) ? degreeToChord(word, currentKey) : word;
+    out += t;
+    const diff = word.length - t.length;
+    if (diff > 0) out += " ".repeat(diff);
+  }
+  return out;
+}
+
 // Convierte una línea de acordes a grados, preservando alineación
 export function chordLineToDegrees(line: string, currentKey: string, mode: "degrees" | "both" = "degrees", semitones = 0): string {
   const safeKey = currentKey && noteIndex(currentKey) !== -1 ? currentKey : "C";
@@ -116,12 +198,21 @@ export function chordLineToDegrees(line: string, currentKey: string, mode: "degr
   return out;
 }
 
-// Línea de solo acordes (todas sus palabras parecen acordes)
+// Línea de solo acordes (todas sus palabras parecen acordes O grados romanos)
 export function isChordLine(line: string): boolean {
   const words = line.trim().split(/\s+/).filter(Boolean);
   if (!words.length) return false;
   const re = /^[A-G][#b]?[a-zA-Z0-9]*(?:\/[A-G][#b]?)?$/;
-  return words.every(w => re.test(w));
+  return words.every(w => re.test(w) || ROMAN_RE.test(w));
+}
+
+// ¿La línea está escrita en grados? (al menos un token romano y ninguno claramente de letra de acorde extraña)
+export function isDegreeLine(line: string): boolean {
+  const words = line.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return false;
+  const hasRoman = words.some(w => ROMAN_RE.test(w));
+  if (!hasRoman) return false;
+  return words.every(w => ROMAN_RE.test(w));
 }
 
 // Transpone una línea de acordes preservando posiciones (espacios)
@@ -164,16 +255,28 @@ export function isTitleLine(line: string, idx: number): boolean {
 
 // Devuelve la letra completa con cada línea ya transpuesta + flag chord/text/section/title
 // displayMode: "chords" (default), "degrees", "both"
-export function renderLines(lyrics: string, semitones: number, currentKey = "C", displayMode: "chords" | "degrees" | "both" = "chords") {
+// `originalKey` es el tono en el que el usuario escribió la letra (canción.song_key).
+// `currentKey` es el tono actualmente mostrado (puede diferir por transposición en vivo).
+// Si una línea está escrita en grados, se interpreta relativa al tono ORIGINAL para obtener acordes absolutos.
+export function renderLines(
+  lyrics: string,
+  semitones: number,
+  currentKey = "C",
+  displayMode: "chords" | "degrees" | "both" = "chords",
+  originalKey?: string,
+) {
+  const baseKey = originalKey && noteIndex(originalKey) !== -1 ? originalKey : currentKey;
   const raw = lyrics.split("\n");
   return raw.map((line, idx) => {
     if (isTitleLine(line, idx)) {
       return { type: "title" as const, text: line };
     }
     if (isChordLine(line)) {
+      // Si la línea fue escrita en grados, primero la pasamos a acordes en el tono ORIGINAL
+      const normalized = isDegreeLine(line) ? degreeLineToChords(line, baseKey) : line;
       const text = displayMode === "chords"
-        ? transposeChordLine(line, semitones, currentKey)
-        : chordLineToDegrees(line, currentKey, displayMode, semitones);
+        ? transposeChordLine(normalized, semitones, currentKey)
+        : chordLineToDegrees(normalized, currentKey, displayMode, semitones);
       return { type: "chord" as const, text };
     }
     if (isSectionLabel(line)) {
