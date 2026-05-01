@@ -55,7 +55,9 @@ export function chordToDegree(chord: string, currentKey: string): string {
   if (!m) return chord;
   const [, root, suffix = "", bass] = m;
   const rootIdx = noteIndex(root);
-  const keyIdx = noteIndex(currentKey);
+  // Fallback defensivo: si el tono no es válido, usamos C para no devolver el acorde sin transformar
+  const safeKey = currentKey && noteIndex(currentKey) !== -1 ? currentKey : "C";
+  const keyIdx = noteIndex(safeKey);
   if (rootIdx === -1 || keyIdx === -1) return chord;
 
   const interval = (rootIdx - keyIdx + 12) % 12;
