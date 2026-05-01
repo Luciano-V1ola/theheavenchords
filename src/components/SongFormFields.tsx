@@ -93,7 +93,7 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
       <div>
         <Label>Letra con acordes</Label>
         <p className="text-xs text-muted-foreground mb-2">
-          Acordes en una línea sola arriba de la letra. Las etiquetas <b>Coro</b>, <b>Coro 2</b>, <b>Verso</b>, <b>Verso 2</b>, <b>Estrofa</b>, <b>Pre-coro</b>, <b>Puente</b>, <b>Puente 2</b>, etc. se ven en negrita automáticamente.
+          Acordes en una línea sola arriba de la letra. También podés escribir <b>grados</b> (ej: <code>I vi IV V</code>, <code>bVII</code>, <code>V/VII</code>, <code>vii°</code>) y se convierten al tono original. Las etiquetas <b>Coro</b>, <b>Verso</b>, <b>Pre-coro</b>, <b>Puente</b>, etc. se ven en negrita.
         </p>
         <Textarea
           rows={14}
