@@ -52,6 +52,7 @@ type Props = { value: SongFields; onChange: (v: SongFields) => void; showPreview
 
 export default function SongFormFields({ value, onChange, showPreview = true }: Props) {
   const set = (patch: Partial<SongFields>) => onChange({ ...value, ...patch });
+  const [editMode, setEditMode] = useState<"chords" | "degrees">("chords");
   return (
     <div className="space-y-3">
       <div>
