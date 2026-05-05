@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,6 +53,15 @@ type Props = { value: SongFields; onChange: (v: SongFields) => void; showPreview
 export default function SongFormFields({ value, onChange, showPreview = true }: Props) {
   const set = (patch: Partial<SongFields>) => onChange({ ...value, ...patch });
   const [editMode, setEditMode] = useState<"chords" | "degrees">("chords");
+  // Buffers independientes: lo que escribís en grados NO afecta a los acordes y viceversa.
+  // El buffer del modo activo se sincroniza con value.lyrics (lo que se guarda).
+  const chordsBufferRef = useRef<string | null>(value.lyrics ?? "");
+  const degreesBufferRef = useRef<string | null>(null);
+  // Mantener sincronizado el buffer activo con cambios externos a value.lyrics
+  useEffect(() => {
+    if (editMode === "chords") chordsBufferRef.current = value.lyrics ?? "";
+    else degreesBufferRef.current = value.lyrics ?? "";
+  }, [value.lyrics, editMode]);
   return (
     <div className="space-y-3">
       <div>
@@ -123,11 +132,19 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
               onValueChange={(v) => {
                 const next = v as "chords" | "degrees";
                 if (next === editMode) return;
-                // Transformar el texto al cambiar de modo así editás directamente lo que ves
-                const converted = next === "degrees"
-                  ? lyricsToDegrees(value.lyrics, value.song_key)
-                  : lyricsToChords(value.lyrics, value.song_key);
-                set({ lyrics: converted });
+                // Guardar lo que el usuario tenía en el modo actual en su buffer
+                if (editMode === "chords") chordsBufferRef.current = value.lyrics;
+                else degreesBufferRef.current = value.lyrics;
+                // Cargar el buffer del modo destino. Si nunca lo editó, generamos uno desde el otro.
+                let target = next === "chords" ? chordsBufferRef.current : degreesBufferRef.current;
+                if (target === null || target === undefined) {
+                  target = next === "degrees"
+                    ? lyricsToDegrees(value.lyrics, value.song_key)
+                    : lyricsToChords(value.lyrics, value.song_key);
+                }
+                if (next === "chords") chordsBufferRef.current = target;
+                else degreesBufferRef.current = target;
+                set({ lyrics: target });
                 setEditMode(next);
               }}
             >
