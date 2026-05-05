@@ -72,16 +72,16 @@ export function chordToDegree(chord: string, currentKey: string): string {
 
   let extra = suffix;
   if (isDim) {
-    // vii° en minúscula con símbolo
-    degree = degree.toLowerCase() + "°";
+    // VII° en mayúscula con símbolo
+    degree = degree + "°";
     extra = extra.replace(/^(dim|°|o)/i, "");
   } else if (isAug) {
     degree = degree + "+";
     extra = extra.replace(/^(aug|\+)/i, "");
   } else if (isMinor) {
-    // Quitamos sólo la "m"/"min" inicial; conservamos lo demás (7, 9, sus, etc.)
-    degree = degree.toLowerCase();
+    // Mayúscula + "m" (ej: Am => VIm, Dm7 => IIm7)
     extra = extra.replace(/^(min|m)/, "");
+    degree = degree + "m";
   }
   // Para mayor con sufijos (7, maj7, sus4, add9...) conservamos extra tal cual
 
