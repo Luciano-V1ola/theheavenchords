@@ -113,16 +113,44 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
         </div>
       </div>
       <div>
-        <Label>Letra con acordes</Label>
+        <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+          <Label>Letra con acordes</Label>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Editar como:</span>
+            <Select
+              value={editMode}
+              onValueChange={(v) => {
+                const next = v as "chords" | "degrees";
+                if (next === editMode) return;
+                // Transformar el texto al cambiar de modo así editás directamente lo que ves
+                const converted = next === "degrees"
+                  ? lyricsToDegrees(value.lyrics, value.song_key)
+                  : lyricsToChords(value.lyrics, value.song_key);
+                set({ lyrics: converted });
+                setEditMode(next);
+              }}
+            >
+              <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="chords">Acordes</SelectItem>
+                <SelectItem value="degrees">Grados</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <p className="text-xs text-muted-foreground mb-2">
-          Acordes en una línea sola arriba de la letra. También podés escribir <b>grados</b> (ej: <code>I vi IV V</code>, <code>bVII</code>, <code>V/VII</code>, <code>vii°</code>) y se convierten al tono original. Las etiquetas <b>Coro</b>, <b>Verso</b>, <b>Pre-coro</b>, <b>Puente</b>, etc. se ven en negrita.
+          {editMode === "chords"
+            ? <>Acordes en una línea sola arriba de la letra. Las etiquetas <b>Coro</b>, <b>Verso</b>, <b>Pre-coro</b>, <b>Puente</b>, etc. se ven en negrita.</>
+            : <>Estás editando en <b>grados</b> (ej: <code>I IIm IV V</code>, <code>bVII</code>, <code>V/VII</code>, <code>VII°</code>). Se guardan así y se convierten al tono al mostrar.</>}
         </p>
         <Textarea
           rows={14}
           className="font-song whitespace-pre"
           value={value.lyrics}
           onChange={e => set({ lyrics: e.target.value })}
-          placeholder={"Estrofa\nC            G            Am          F\nCuán grande es Él, cuán grande es Él"}
+          placeholder={editMode === "chords"
+            ? "Estrofa\nC            G            Am          F\nCuán grande es Él, cuán grande es Él"
+            : "Estrofa\nI            V            VIm         IV\nCuán grande es Él, cuán grande es Él"}
         />
       </div>
       {showPreview && (
