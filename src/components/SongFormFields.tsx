@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +43,9 @@ export type SongFields = {
   artist: string;
   song_key: string;
   lyrics: string;
+  chordsLyrics?: string;
+  degreesLyrics?: string;
+  editMode?: "chords" | "degrees";
   font?: SongFont;
   bpm?: number | null;
   time_signature?: string | null;
@@ -52,16 +55,20 @@ type Props = { value: SongFields; onChange: (v: SongFields) => void; showPreview
 
 export default function SongFormFields({ value, onChange, showPreview = true }: Props) {
   const set = (patch: Partial<SongFields>) => onChange({ ...value, ...patch });
-  const [editMode, setEditMode] = useState<"chords" | "degrees">("chords");
-  // Buffers independientes: lo que escribís en grados NO afecta a los acordes y viceversa.
-  // El buffer del modo activo se sincroniza con value.lyrics (lo que se guarda).
-  const chordsBufferRef = useRef<string | null>(value.lyrics ?? "");
-  const degreesBufferRef = useRef<string | null>(null);
-  // Mantener sincronizado el buffer activo con cambios externos a value.lyrics
-  useEffect(() => {
-    if (editMode === "chords") chordsBufferRef.current = value.lyrics ?? "";
-    else degreesBufferRef.current = value.lyrics ?? "";
-  }, [value.lyrics, editMode]);
+  const { editMode, chordsLyrics, degreesLyrics, visibleLyrics } = useMemo(() => {
+    const rawLyrics = value.lyrics ?? "";
+    const rawLooksLikeDegrees = rawLyrics.split("\n").some((line) => isDegreeLine(line));
+    const resolvedChords = value.chordsLyrics ?? (rawLooksLikeDegrees ? lyricsToChords(rawLyrics, value.song_key) : rawLyrics);
+    const resolvedDegrees = value.degreesLyrics ?? (rawLooksLikeDegrees ? rawLyrics : lyricsToDegrees(rawLyrics, value.song_key));
+    const resolvedMode = value.editMode ?? (rawLooksLikeDegrees ? "degrees" : "chords");
+
+    return {
+      editMode: resolvedMode,
+      chordsLyrics: resolvedChords,
+      degreesLyrics: resolvedDegrees,
+      visibleLyrics: resolvedMode === "degrees" ? resolvedDegrees : resolvedChords,
+    };
+  }, [value.lyrics, value.chordsLyrics, value.degreesLyrics, value.editMode, value.song_key]);
   return (
     <div className="space-y-3">
       <div>
@@ -132,20 +139,12 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
               onValueChange={(v) => {
                 const next = v as "chords" | "degrees";
                 if (next === editMode) return;
-                // Guardar lo que el usuario tenía en el modo actual en su buffer
-                if (editMode === "chords") chordsBufferRef.current = value.lyrics;
-                else degreesBufferRef.current = value.lyrics;
-                // Cargar el buffer del modo destino. Si nunca lo editó, generamos uno desde el otro.
-                let target = next === "chords" ? chordsBufferRef.current : degreesBufferRef.current;
-                if (target === null || target === undefined) {
-                  target = next === "degrees"
-                    ? lyricsToDegrees(value.lyrics, value.song_key)
-                    : lyricsToChords(value.lyrics, value.song_key);
-                }
-                if (next === "chords") chordsBufferRef.current = target;
-                else degreesBufferRef.current = target;
-                set({ lyrics: target });
-                setEditMode(next);
+                set({
+                  editMode: next,
+                  chordsLyrics,
+                  degreesLyrics,
+                  lyrics: next === "degrees" ? degreesLyrics : chordsLyrics,
+                });
               }}
             >
               <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
@@ -164,8 +163,23 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
         <Textarea
           rows={14}
           className="font-song whitespace-pre"
-          value={value.lyrics}
-          onChange={e => set({ lyrics: e.target.value })}
+          value={visibleLyrics}
+          onChange={e => {
+            const nextLyrics = e.target.value;
+            set(editMode === "degrees"
+              ? {
+                  editMode,
+                  degreesLyrics: nextLyrics,
+                  chordsLyrics,
+                  lyrics: nextLyrics,
+                }
+              : {
+                  editMode,
+                  chordsLyrics: nextLyrics,
+                  degreesLyrics,
+                  lyrics: nextLyrics,
+                });
+          }}
           placeholder={editMode === "chords"
             ? "Estrofa\nC            G            Am          F\nCuán grande es Él, cuán grande es Él"
             : "Estrofa\nI            V            VIm         IV\nCuán grande es Él, cuán grande es Él"}
@@ -178,7 +192,9 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
             title={value.title}
             artist={value.artist}
             song_key={value.song_key}
-            lyrics={value.lyrics}
+            lyrics={visibleLyrics}
+            chordsLyrics={chordsLyrics}
+            degreesLyrics={degreesLyrics}
             font={value.font}
           />
         </div>
