@@ -1,9 +1,31 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { KEY_OPTIONS } from "@/lib/chords";
+import {
+  KEY_OPTIONS,
+  isChordLine,
+  isDegreeLine,
+  chordLineToDegrees,
+  degreeLineToChords,
+} from "@/lib/chords";
 import SongPreview from "./SongPreview";
+
+// Convierte solo las líneas de acordes a grados (deja letras y secciones intactas)
+function lyricsToDegrees(lyrics: string, key: string): string {
+  return lyrics.split("\n").map(line => {
+    if (isChordLine(line) && !isDegreeLine(line)) return chordLineToDegrees(line, key, "degrees", 0);
+    return line;
+  }).join("\n");
+}
+// Convierte solo las líneas de grados a acordes
+function lyricsToChords(lyrics: string, key: string): string {
+  return lyrics.split("\n").map(line => {
+    if (isDegreeLine(line)) return degreeLineToChords(line, key);
+    return line;
+  }).join("\n");
+}
 
 // Tipografías disponibles para mostrar la canción
 export type SongFont = "arial" | "calibri";
