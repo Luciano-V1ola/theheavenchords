@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,6 +53,15 @@ type Props = { value: SongFields; onChange: (v: SongFields) => void; showPreview
 export default function SongFormFields({ value, onChange, showPreview = true }: Props) {
   const set = (patch: Partial<SongFields>) => onChange({ ...value, ...patch });
   const [editMode, setEditMode] = useState<"chords" | "degrees">("chords");
+  // Buffers independientes: lo que escribís en grados NO afecta a los acordes y viceversa.
+  // El buffer del modo activo se sincroniza con value.lyrics (lo que se guarda).
+  const chordsBufferRef = useRef<string | null>(value.lyrics ?? "");
+  const degreesBufferRef = useRef<string | null>(null);
+  // Mantener sincronizado el buffer activo con cambios externos a value.lyrics
+  useEffect(() => {
+    if (editMode === "chords") chordsBufferRef.current = value.lyrics ?? "";
+    else degreesBufferRef.current = value.lyrics ?? "";
+  }, [value.lyrics, editMode]);
   return (
     <div className="space-y-3">
       <div>
