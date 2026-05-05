@@ -11,16 +11,23 @@ type Props = {
   artist?: string;
   song_key: string;
   lyrics: string;
+  chordsLyrics?: string;
+  degreesLyrics?: string;
   font?: SongFont;
 };
 
-export default function SongPreview({ title, artist, song_key, lyrics, font }: Props) {
+export default function SongPreview({ title, artist, song_key, lyrics, chordsLyrics, degreesLyrics, font }: Props) {
   const fontClass = (font ?? "arial") === "calibri" ? "font-calibri" : "font-arial";
   const [displayMode, setDisplayMode] = useState<"chords" | "degrees">("chords");
   // Sin transposición: previsualizamos en el tono original
   const lines = useMemo(
-    () => renderLines(lyrics, 0, song_key, displayMode, song_key),
-    [lyrics, song_key, displayMode],
+    () => {
+      const sourceLyrics = displayMode === "degrees"
+        ? (degreesLyrics ?? lyrics)
+        : (chordsLyrics ?? lyrics);
+      return renderLines(sourceLyrics, 0, song_key, displayMode, song_key);
+    },
+    [lyrics, song_key, displayMode, chordsLyrics, degreesLyrics],
   );
 
   return (
