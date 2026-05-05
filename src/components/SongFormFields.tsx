@@ -132,11 +132,19 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
               onValueChange={(v) => {
                 const next = v as "chords" | "degrees";
                 if (next === editMode) return;
-                // Transformar el texto al cambiar de modo así editás directamente lo que ves
-                const converted = next === "degrees"
-                  ? lyricsToDegrees(value.lyrics, value.song_key)
-                  : lyricsToChords(value.lyrics, value.song_key);
-                set({ lyrics: converted });
+                // Guardar lo que el usuario tenía en el modo actual en su buffer
+                if (editMode === "chords") chordsBufferRef.current = value.lyrics;
+                else degreesBufferRef.current = value.lyrics;
+                // Cargar el buffer del modo destino. Si nunca lo editó, generamos uno desde el otro.
+                let target = next === "chords" ? chordsBufferRef.current : degreesBufferRef.current;
+                if (target === null || target === undefined) {
+                  target = next === "degrees"
+                    ? lyricsToDegrees(value.lyrics, value.song_key)
+                    : lyricsToChords(value.lyrics, value.song_key);
+                }
+                if (next === "chords") chordsBufferRef.current = target;
+                else degreesBufferRef.current = target;
+                set({ lyrics: target });
                 setEditMode(next);
               }}
             >
