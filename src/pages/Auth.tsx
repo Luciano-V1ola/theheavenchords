@@ -41,7 +41,7 @@ export default function Auth() {
       if (mode === "signup") {
         if (!displayName.trim()) { toast.error("El nombre de usuario es obligatorio"); setLoading(false); return; }
         if (!pwValid) { toast.error("La contraseña no cumple los requisitos"); setLoading(false); return; }
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: {
             emailRedirectTo: `${window.location.origin}/${inviteToken ? `?invite=${inviteToken}` : ""}`,
@@ -49,7 +49,14 @@ export default function Auth() {
           }
         });
         if (error) throw error;
-        toast.success("Cuenta creada. Revisa tu email si se requiere confirmación.");
+        // Si no hay sesión activa, Supabase exige confirmar el email.
+        if (!data.session) {
+          setConfirmSent(email);
+          toast.success("Te enviamos un email para confirmar tu cuenta");
+          setLoading(false);
+          return;
+        }
+        toast.success("Cuenta creada");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
