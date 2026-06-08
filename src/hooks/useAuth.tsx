@@ -19,12 +19,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      setLoading(false);
+    let initialized = false;
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      // Solo actualizamos la sesión cuando el usuario realmente cambia
+      // (login / logout). Eventos como TOKEN_REFRESHED se disparan al volver
+      // a la pestaña y no deben provocar recargas en componentes hijos.
+      setSession((prev) => {
+        if (prev?.user?.id === s?.user?.id) return prev;
+        return s;
+      });
+      if (!initialized) {
+        initialized = true;
+        setLoading(false);
+      }
     });
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+      setSession((prev) => (prev?.user?.id === data.session?.user?.id ? prev : data.session));
+      initialized = true;
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();

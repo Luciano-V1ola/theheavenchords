@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Music } from "lucide-react";
+import { Music, Check, Circle } from "lucide-react";
+
+// Validación visual de contraseña (solo aplica en registro)
+function getPasswordChecks(pw: string) {
+  return [
+    { label: "Mínimo 8 caracteres", ok: pw.length >= 8 },
+    { label: "Una letra mayúscula", ok: /[A-Z]/.test(pw) },
+    { label: "Una letra minúscula", ok: /[a-z]/.test(pw) },
+    { label: "Un número", ok: /\d/.test(pw) },
+    { label: "Un símbolo especial (@ # $ % ! ? * etc.)", ok: /[^A-Za-z0-9]/.test(pw) },
+  ];
+}
 
 // Página de login y registro
 export default function Auth() {
@@ -19,12 +30,16 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const pwChecks = useMemo(() => getPasswordChecks(password), [password]);
+  const pwValid = pwChecks.every(c => c.ok);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
         if (!displayName.trim()) { toast.error("El nombre de usuario es obligatorio"); setLoading(false); return; }
+        if (!pwValid) { toast.error("La contraseña no cumple los requisitos"); setLoading(false); return; }
         const { error } = await supabase.auth.signUp({
           email, password,
           options: {
@@ -84,11 +99,27 @@ export default function Auth() {
           </div>
           <div>
             <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} />
+            <Input id="password" type="password" required minLength={mode === "signup" ? 8 : 6} value={password} onChange={e => setPassword(e.target.value)} />
+            {mode === "signup" && (
+              <div className="mt-2 rounded-md border bg-muted/40 p-3 space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">
+                  La contraseña debe cumplir los siguientes requisitos:
+                </p>
+                <ul className="space-y-1">
+                  {pwChecks.map((c, i) => (
+                    <li key={i} className={`flex items-center gap-2 text-xs ${c.ok ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                      {c.ok ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                      <span>{c.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || (mode === "signup" && !pwValid)}>
             {loading ? "..." : mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
           </Button>
+
         </form>
 
         <div className="text-center text-sm space-y-2">
