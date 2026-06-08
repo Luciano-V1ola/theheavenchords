@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Music } from "lucide-react";
+import { Music, Check, Circle } from "lucide-react";
+
+// Validación visual de contraseña (solo aplica en registro)
+function getPasswordChecks(pw: string) {
+  return [
+    { label: "Mínimo 8 caracteres", ok: pw.length >= 8 },
+    { label: "Una letra mayúscula", ok: /[A-Z]/.test(pw) },
+    { label: "Una letra minúscula", ok: /[a-z]/.test(pw) },
+    { label: "Un número", ok: /\d/.test(pw) },
+    { label: "Un símbolo especial (@ # $ % ! ? * etc.)", ok: /[^A-Za-z0-9]/.test(pw) },
+  ];
+}
 
 // Página de login y registro
 export default function Auth() {
@@ -19,12 +30,16 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const pwChecks = useMemo(() => getPasswordChecks(password), [password]);
+  const pwValid = pwChecks.every(c => c.ok);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
         if (!displayName.trim()) { toast.error("El nombre de usuario es obligatorio"); setLoading(false); return; }
+        if (!pwValid) { toast.error("La contraseña no cumple los requisitos"); setLoading(false); return; }
         const { error } = await supabase.auth.signUp({
           email, password,
           options: {
