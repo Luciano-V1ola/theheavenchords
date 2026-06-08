@@ -99,11 +99,27 @@ export default function Auth() {
           </div>
           <div>
             <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} />
+            <Input id="password" type="password" required minLength={mode === "signup" ? 8 : 6} value={password} onChange={e => setPassword(e.target.value)} />
+            {mode === "signup" && (
+              <div className="mt-2 rounded-md border bg-muted/40 p-3 space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">
+                  La contraseña debe cumplir los siguientes requisitos:
+                </p>
+                <ul className="space-y-1">
+                  {pwChecks.map((c, i) => (
+                    <li key={i} className={`flex items-center gap-2 text-xs ${c.ok ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                      {c.ok ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                      <span>{c.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || (mode === "signup" && !pwValid)}>
             {loading ? "..." : mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
           </Button>
+
         </form>
 
         <div className="text-center text-sm space-y-2">
