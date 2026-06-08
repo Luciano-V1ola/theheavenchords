@@ -87,6 +87,20 @@ export default function Auth() {
           </p>
         </div>
 
+        {confirmSent && (
+          <div className="rounded-md border border-primary/30 bg-primary/10 p-4 text-sm space-y-2">
+            <p className="font-semibold">📧 Confirma tu email</p>
+            <p className="text-muted-foreground">
+              Te enviamos un enlace de confirmación a <b>{confirmSent}</b>. Abrílo desde tu correo
+              para activar la cuenta y poder iniciar sesión.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Revisá la carpeta de spam si no lo encontrás.
+            </p>
+          </div>
+        )}
+
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
             <div>
