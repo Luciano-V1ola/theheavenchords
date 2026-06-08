@@ -29,6 +29,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [confirmSent, setConfirmSent] = useState<string | null>(null);
 
   const pwChecks = useMemo(() => getPasswordChecks(password), [password]);
   const pwValid = pwChecks.every(c => c.ok);
