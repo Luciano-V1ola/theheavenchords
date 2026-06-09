@@ -79,10 +79,12 @@ export type Database = {
           id: string
           lyrics: string
           pending_changes: string | null
+          previous_slugs: string[]
           proposed_by: string
           reject_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          slug: string | null
           song_key: string
           status: Database["public"]["Enums"]["song_status"]
           time_signature: string | null
@@ -97,10 +99,12 @@ export type Database = {
           id?: string
           lyrics: string
           pending_changes?: string | null
+          previous_slugs?: string[]
           proposed_by: string
           reject_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          slug?: string | null
           song_key?: string
           status?: Database["public"]["Enums"]["song_status"]
           time_signature?: string | null
@@ -115,10 +119,12 @@ export type Database = {
           id?: string
           lyrics?: string
           pending_changes?: string | null
+          previous_slugs?: string[]
           proposed_by?: string
           reject_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          slug?: string | null
           song_key?: string
           status?: Database["public"]["Enums"]["song_status"]
           time_signature?: string | null
@@ -382,6 +388,7 @@ export type Database = {
       is_owner_or_mod: { Args: { _user_id: string }; Returns: boolean }
       resolve_user_id_by_email: { Args: { _email: string }; Returns: string }
       setlist_church_id: { Args: { _setlist_id: string }; Returns: string }
+      slugify: { Args: { _t: string }; Returns: string }
       update_setlist_song_drawing: {
         Args: { _drawing: Json; _id: string }
         Returns: undefined
