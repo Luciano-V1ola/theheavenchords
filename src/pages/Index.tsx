@@ -262,13 +262,34 @@ export default function Index() {
       </header>
 
       <main className="max-w-4xl mx-auto p-4">
-        {viewingGlobal ? (
+        {routeSlug && slugLoading && !viewingGlobal ? (
+          <Card className="p-8 text-center text-muted-foreground">Cargando canción…</Card>
+        ) : routeSlug && slugNotFound && !viewingGlobal ? (
+          <Card className="p-8 text-center space-y-3">
+            <p className="text-muted-foreground">No encontramos esa canción.</p>
+            <Button variant="outline" size="sm" onClick={() => navigate("/")}>Volver al catálogo</Button>
+          </Card>
+        ) : viewingGlobal ? (
           // Visor del CATÁLOGO. Independiente del visor de listas.
-          <SongViewer
-            key={`catalog-${viewingGlobal.id}`}
-            song={{ ...viewingGlobal, source: "catalog" }}
-            onBack={closeCatalogViewer}
-          />
+          <>
+            <Helmet>
+              <title>{`${viewingGlobal.title} | The Heaven Chords`}</title>
+              <meta name="description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en tono ${viewingGlobal.song_key}${viewingGlobal.bpm ? `, ${viewingGlobal.bpm} BPM` : ""}${viewingGlobal.time_signature ? `, compás ${viewingGlobal.time_signature}` : ""}. The Heaven Chords.`} />
+              <link rel="canonical" href={`https://theheavenchords.lovable.app${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`} />
+              <meta property="og:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
+              <meta property="og:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
+              <meta property="og:url" content={`https://theheavenchords.lovable.app${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`} />
+              <meta property="og:type" content="music.song" />
+              <meta name="twitter:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
+              <meta name="twitter:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
+            </Helmet>
+            <SongViewer
+              key={`catalog-${viewingGlobal.id}`}
+              song={{ ...viewingGlobal, source: "catalog" }}
+              onBack={closeCatalogViewer}
+              shareUrl={`${window.location.origin}${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`}
+            />
+          </>
         ) : openSetlist && current ? (
           <SetlistDetail church={current} setlist={openSetlist} onBack={() => setOpenSetlist(null)} />
         ) : (
