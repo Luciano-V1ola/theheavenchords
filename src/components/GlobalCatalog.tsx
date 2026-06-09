@@ -22,6 +22,7 @@ export type GlobalSong = {
   hidden?: boolean;
   bpm?: number | null;
   time_signature?: string | null;
+  slug?: string | null;
 };
 
 type Props = {
@@ -72,7 +73,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     // gracias a la política RLS sobre canciones aprobadas no ocultas.
     const { data, error } = await supabase
       .from("global_songs")
-      .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden, bpm, time_signature")
+      .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden, bpm, time_signature, slug")
       .order("title");
     if (error) { toast.error(error.message); setLoading(false); return; }
 

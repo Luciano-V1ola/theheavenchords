@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import { useChurch } from "@/hooks/useChurch";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { slugify, songPath } from "@/lib/slug";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +36,7 @@ export default function Index() {
   const { memberships, current, setCurrent, refresh, loading: chLoading } = useChurch();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const { slug: routeSlug } = useParams<{ slug?: string }>();
 
   const [tab, setTab] = useState<Tab>("catalog");
   const [openSetlist, setOpenSetlist] = useState<Setlist | null>(null);
@@ -43,6 +46,8 @@ export default function Index() {
   const [addToList, setAddToList] = useState<GlobalSong | null>(null);
   const [newChurchOpen, setNewChurchOpen] = useState(false);
   const [newChurchName, setNewChurchName] = useState("");
+  const [slugLoading, setSlugLoading] = useState(false);
+  const [slugNotFound, setSlugNotFound] = useState(false);
 
   // Aceptar invitación de la URL si llega
   useEffect(() => {
@@ -63,11 +68,83 @@ export default function Index() {
     setOpenSetlist(null);
     setTab("catalog");
     setViewingGlobal({ ...song, source: "catalog" });
+    // Cambia la URL sin recargar para tener enlace compartible/indexable.
+    const target = songPath((song as any).slug, song.title);
+    if (window.location.pathname !== target) navigate(target);
   };
 
   const closeCatalogViewer = () => {
     setViewingGlobal(null);
+    if (window.location.pathname.startsWith("/cancion/")) navigate("/");
   };
+
+  // Sincroniza el visor con el slug de la URL (deep link / refresh / back).
+  useEffect(() => {
+    if (!routeSlug) {
+      setSlugNotFound(false);
+      return;
+    }
+    // Ya cargado el correcto
+    const currentSlug = (viewingGlobal as any)?.slug ?? slugify(viewingGlobal?.title ?? "");
+    if (viewingGlobal && currentSlug === routeSlug) return;
+
+    let cancelled = false;
+    setSlugLoading(true);
+    setSlugNotFound(false);
+    (async () => {
+      // Buscar por slug actual
+      let { data, error } = await supabase
+        .from("global_songs")
+        .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden, bpm, time_signature, slug, previous_slugs")
+        .eq("slug", routeSlug)
+        .maybeSingle();
+
+      // Buscar en slugs anteriores → redirigir al actual
+      if (!data && !error) {
+        const r = await supabase
+          .from("global_songs")
+          .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden, bpm, time_signature, slug, previous_slugs")
+          .contains("previous_slugs", [routeSlug])
+          .maybeSingle();
+        data = r.data as any;
+      }
+
+      if (cancelled) return;
+      setSlugLoading(false);
+      if (!data) { setSlugNotFound(true); return; }
+
+      // Si es solo aprobada y no oculta, mostrarla. (RLS ya filtra por anon.)
+      const lyricsRaw: string = (data as any).lyrics ?? "";
+      const fontMatch = lyricsRaw.match(/^\[font:(arial|calibri)\]\s*\n?/i);
+      const font = fontMatch ? (fontMatch[1].toLowerCase() as "arial" | "calibri") : null;
+      const clean = fontMatch ? lyricsRaw.slice(fontMatch[0].length) : lyricsRaw;
+
+      // Nombre del colaborador
+      let contributor_name: string | null = null;
+      if ((data as any).proposed_by) {
+        const { data: prof } = await supabase
+          .from("profiles").select("display_name").eq("user_id", (data as any).proposed_by).maybeSingle();
+        contributor_name = prof?.display_name ?? null;
+      }
+
+      const song: CatalogViewerSong = {
+        ...(data as any),
+        font,
+        lyrics: clean,
+        contributor_name,
+        source: "catalog",
+      };
+      setOpenSetlist(null);
+      setTab("catalog");
+      setViewingGlobal(song);
+
+      // Si entró por un slug antiguo, normalizamos la URL al actual.
+      if ((data as any).slug && (data as any).slug !== routeSlug) {
+        navigate(songPath((data as any).slug), { replace: true });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [routeSlug]);
 
   useEffect(() => {
     if (!user) { setCreatedChurchId(null); return; }
@@ -185,13 +262,34 @@ export default function Index() {
       </header>
 
       <main className="max-w-4xl mx-auto p-4">
-        {viewingGlobal ? (
+        {routeSlug && slugLoading && !viewingGlobal ? (
+          <Card className="p-8 text-center text-muted-foreground">Cargando canción…</Card>
+        ) : routeSlug && slugNotFound && !viewingGlobal ? (
+          <Card className="p-8 text-center space-y-3">
+            <p className="text-muted-foreground">No encontramos esa canción.</p>
+            <Button variant="outline" size="sm" onClick={() => navigate("/")}>Volver al catálogo</Button>
+          </Card>
+        ) : viewingGlobal ? (
           // Visor del CATÁLOGO. Independiente del visor de listas.
-          <SongViewer
-            key={`catalog-${viewingGlobal.id}`}
-            song={{ ...viewingGlobal, source: "catalog" }}
-            onBack={closeCatalogViewer}
-          />
+          <>
+            <Helmet>
+              <title>{`${viewingGlobal.title} | The Heaven Chords`}</title>
+              <meta name="description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en tono ${viewingGlobal.song_key}${viewingGlobal.bpm ? `, ${viewingGlobal.bpm} BPM` : ""}${viewingGlobal.time_signature ? `, compás ${viewingGlobal.time_signature}` : ""}. The Heaven Chords.`} />
+              <link rel="canonical" href={`https://theheavenchords.lovable.app${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`} />
+              <meta property="og:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
+              <meta property="og:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
+              <meta property="og:url" content={`https://theheavenchords.lovable.app${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`} />
+              <meta property="og:type" content="music.song" />
+              <meta name="twitter:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
+              <meta name="twitter:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
+            </Helmet>
+            <SongViewer
+              key={`catalog-${viewingGlobal.id}`}
+              song={{ ...viewingGlobal, source: "catalog" }}
+              onBack={closeCatalogViewer}
+              shareUrl={`${window.location.origin}${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`}
+            />
+          </>
         ) : openSetlist && current ? (
           <SetlistDetail church={current} setlist={openSetlist} onBack={() => setOpenSetlist(null)} />
         ) : (

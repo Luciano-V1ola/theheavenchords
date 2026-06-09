@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush } from "lucide-react";
+import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
 import { SongFont } from "./SongFormFields";
@@ -38,6 +38,8 @@ type Props = {
   onSaveDrawing?: (d: Drawing) => Promise<void> | void;
   // Si se provee, persiste el cambio de tono (solo para listas)
   onChangeKey?: (newKey: string) => Promise<void> | void;
+  // URL única de la canción para compartir.
+  shareUrl?: string;
 };
 
 // Extrae una línea de metadata "[font:arial]" si existe
@@ -47,7 +49,7 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
   return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
 }
 
-export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing, onChangeKey }: Props) {
+export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing, onChangeKey, shareUrl }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
   const [displayMode, setDisplayMode] = useState<"chords" | "degrees">("chords");
   const [scrolling, setScrolling] = useState(false);
@@ -201,6 +203,14 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             {scrolling ? <><Pause className="w-4 h-4 mr-1" /> Detener</> : <><Play className="w-4 h-4 mr-1" /> Auto-scroll</>}
           </Button>
           <Button size="sm" variant="outline" onClick={copy}><Copy className="w-4 h-4 mr-1" /> Copiar</Button>
+          {shareUrl && (
+            <Button size="sm" variant="outline" onClick={async () => {
+              try { await navigator.clipboard.writeText(shareUrl); toast.success("Enlace copiado"); }
+              catch { toast.error("No se pudo copiar"); }
+            }}>
+              <Link2 className="w-4 h-4 mr-1" /> Copiar enlace
+            </Button>
+          )}
           {canDraw && (
             <Button size="sm" variant={drawMode ? "default" : "outline"} onClick={() => setDrawMode(d => !d)} title="Dibujar sobre la partitura">
               <Brush className="w-4 h-4 mr-1" /> {drawMode ? "Dibujando" : "Dibujar"}
