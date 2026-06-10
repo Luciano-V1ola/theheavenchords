@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Music, Check, Circle } from "lucide-react";
+import { SITE_URL } from "@/lib/site";
 
 // Validación visual de contraseña (solo aplica en registro)
 function getPasswordChecks(pw: string) {
