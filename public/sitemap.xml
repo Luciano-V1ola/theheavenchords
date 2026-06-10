@@ -6,13 +6,19 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.lovable.app/cancion/al-estar-aqui</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.lovable.app/cancion/vamos-a-cantar</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/como-te-amamos</loc>
+    <loc>https://theheavenchords.lovable.app/cancion/como-te-amamos</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -24,7 +30,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/cristo-la-pena-de-horeb</loc>
+    <loc>https://theheavenchords.lovable.app/cancion/la-gloria-de-dios</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -36,7 +42,25 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.lovable.app/cancion/santo-por-siempre</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.lovable.app/cancion/cristo-la-pena-de-horeb</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.lovable.app/cancion/alaba</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.lovable.app/cancion/es-el</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -66,13 +90,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/anclado-en-la-roca-yahweh</loc>
+    <loc>https://theheavenchords.lovable.app/cancion/tu-eres-todo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/tu-eres-todo</loc>
+    <loc>https://theheavenchords.lovable.app/cancion/anclado-en-la-roca-yahweh</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -271,12 +295,6 @@
   </url>
   <url>
     <loc>https://theheavenchords.lovable.app/cancion/tumbas-a-jardines</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://theheavenchords.lovable.app/cancion/al-estar-aqui</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
