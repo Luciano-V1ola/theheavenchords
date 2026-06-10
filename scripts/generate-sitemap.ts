@@ -5,7 +5,8 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 import { createClient } from "@supabase/supabase-js";
 
-const BASE_URL = "https://theheavenchords.lovable.app";
+// Canonical public domain. Keep in sync with src/lib/site.ts.
+const BASE_URL = process.env.SITE_URL || "https://theheavenchords.xyz";
 
 const SUPABASE_URL = "https://ympwrlneuzndczpkfrnv.supabase.co";
 const SUPABASE_ANON_KEY =

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Music, Check, Circle } from "lucide-react";
+import { SITE_URL } from "@/lib/site";
 
 // Validación visual de contraseña (solo aplica en registro)
 function getPasswordChecks(pw: string) {
@@ -44,7 +45,7 @@ export default function Auth() {
         const { data, error } = await supabase.auth.signUp({
           email, password,
           options: {
-            emailRedirectTo: `${window.location.origin}/${inviteToken ? `?invite=${inviteToken}` : ""}`,
+            emailRedirectTo: `${SITE_URL}/${inviteToken ? `?invite=${inviteToken}` : ""}`,
             data: { display_name: displayName.trim() },
           }
         });

@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://theheavenchords.lovable.app/</loc>
+    <loc>https://theheavenchords.xyz/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/vamos-a-cantar</loc>
+    <loc>https://theheavenchords.xyz/cancion/al-estar-aqui</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/vamos-a-cantar</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -18,295 +24,307 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/dios-imparable</loc>
+    <loc>https://theheavenchords.xyz/cancion/dios-imparable</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/cristo-la-pena-de-horeb</loc>
+    <loc>https://theheavenchords.xyz/cancion/la-gloria-de-dios</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/agnus-dei</loc>
+    <loc>https://theheavenchords.xyz/cancion/agnus-dei</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/alaba</loc>
+    <loc>https://theheavenchords.xyz/cancion/santo-por-siempre</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/toma-tu-lugar</loc>
+    <loc>https://theheavenchords.xyz/cancion/cristo-la-pena-de-horeb</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/yo-soy-el-que-soy</loc>
+    <loc>https://theheavenchords.xyz/cancion/alaba</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/al-que-es-digno</loc>
+    <loc>https://theheavenchords.xyz/cancion/es-el</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/el-nos-ama</loc>
+    <loc>https://theheavenchords.xyz/cancion/toma-tu-lugar</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/anclado-en-la-roca-yahweh</loc>
+    <loc>https://theheavenchords.xyz/cancion/yo-soy-el-que-soy</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/tu-eres-todo</loc>
+    <loc>https://theheavenchords.xyz/cancion/al-que-es-digno</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/cantar-de-los-cantares</loc>
+    <loc>https://theheavenchords.xyz/cancion/el-nos-ama</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/se-aviva-el-fuego</loc>
+    <loc>https://theheavenchords.xyz/cancion/tu-eres-todo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/fui-sellado</loc>
+    <loc>https://theheavenchords.xyz/cancion/anclado-en-la-roca-yahweh</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/hermoso-dios</loc>
+    <loc>https://theheavenchords.xyz/cancion/cantar-de-los-cantares</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/mirenlo</loc>
+    <loc>https://theheavenchords.xyz/cancion/se-aviva-el-fuego</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/te-entrego</loc>
+    <loc>https://theheavenchords.xyz/cancion/fui-sellado</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/es-tiempo</loc>
+    <loc>https://theheavenchords.xyz/cancion/hermoso-dios</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/gracias-dios</loc>
+    <loc>https://theheavenchords.xyz/cancion/mirenlo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/cuan-grande-es-dios</loc>
+    <loc>https://theheavenchords.xyz/cancion/te-entrego</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/cristo</loc>
+    <loc>https://theheavenchords.xyz/cancion/es-tiempo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/alfa-y-omega</loc>
+    <loc>https://theheavenchords.xyz/cancion/gracias-dios</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/yo-quiero-mas-de-ti</loc>
+    <loc>https://theheavenchords.xyz/cancion/cuan-grande-es-dios</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/oh-la-gloria</loc>
+    <loc>https://theheavenchords.xyz/cancion/cristo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/yo-tengo-gozo</loc>
+    <loc>https://theheavenchords.xyz/cancion/alfa-y-omega</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/hermoso</loc>
+    <loc>https://theheavenchords.xyz/cancion/yo-quiero-mas-de-ti</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/al-rey</loc>
+    <loc>https://theheavenchords.xyz/cancion/oh-la-gloria</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/aqui-estoy</loc>
+    <loc>https://theheavenchords.xyz/cancion/yo-tengo-gozo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/digno</loc>
+    <loc>https://theheavenchords.xyz/cancion/hermoso</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/el-fuego-de-tus-ojos</loc>
+    <loc>https://theheavenchords.xyz/cancion/al-rey</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/que-ruja-el-leon</loc>
+    <loc>https://theheavenchords.xyz/cancion/aqui-estoy</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/mi-roca</loc>
+    <loc>https://theheavenchords.xyz/cancion/digno</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/amamos-tanto-tu-presencia</loc>
+    <loc>https://theheavenchords.xyz/cancion/el-fuego-de-tus-ojos</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/rey-de-reyes</loc>
+    <loc>https://theheavenchords.xyz/cancion/que-ruja-el-leon</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/hermoso-nombre</loc>
+    <loc>https://theheavenchords.xyz/cancion/mi-roca</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/santo-eres-tu-senor</loc>
+    <loc>https://theheavenchords.xyz/cancion/amamos-tanto-tu-presencia</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/yo-no-dare-a-otros-mis-amores</loc>
+    <loc>https://theheavenchords.xyz/cancion/rey-de-reyes</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/digno-es-el-senor</loc>
+    <loc>https://theheavenchords.xyz/cancion/hermoso-nombre</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/yo-te-amo</loc>
+    <loc>https://theheavenchords.xyz/cancion/santo-eres-tu-senor</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/yo-te-busco</loc>
+    <loc>https://theheavenchords.xyz/cancion/yo-no-dare-a-otros-mis-amores</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/lindo-lindo-solo-quiero-verte-a-ti-nuestro-amado</loc>
+    <loc>https://theheavenchords.xyz/cancion/digno-es-el-senor</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/yo-se</loc>
+    <loc>https://theheavenchords.xyz/cancion/yo-te-amo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/ven-descansa</loc>
+    <loc>https://theheavenchords.xyz/cancion/yo-te-busco</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/tumbas-a-jardines</loc>
+    <loc>https://theheavenchords.xyz/cancion/lindo-lindo-solo-quiero-verte-a-ti-nuestro-amado</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/al-estar-aqui</loc>
+    <loc>https://theheavenchords.xyz/cancion/yo-se</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/toda-lengua-y-toda-nacion</loc>
+    <loc>https://theheavenchords.xyz/cancion/ven-descansa</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/tumba-las-mesas</loc>
+    <loc>https://theheavenchords.xyz/cancion/tumbas-a-jardines</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/habra-alguno-digno-el-es</loc>
+    <loc>https://theheavenchords.xyz/cancion/toda-lengua-y-toda-nacion</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/cristo-sustenta</loc>
+    <loc>https://theheavenchords.xyz/cancion/tumba-las-mesas</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.lovable.app/cancion/digno-2</loc>
+    <loc>https://theheavenchords.xyz/cancion/habra-alguno-digno-el-es</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/cristo-sustenta</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/digno-2</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

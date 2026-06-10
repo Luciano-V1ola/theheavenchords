@@ -65,7 +65,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
       .select("token").single();
     setSending(false);
     if (error) { toast.error(error.message); return; }
-    const link = `${window.location.origin}/auth?invite=${data.token}`;
+    const link = `${(await import("@/lib/site")).SITE_URL}/auth?invite=${data.token}`;
     await navigator.clipboard.writeText(link).catch(() => {});
     toast.success("Invitación creada y enlace copiado");
     setEmail("");
@@ -73,9 +73,11 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
   };
 
   const copyLink = async (token: string) => {
-    await navigator.clipboard.writeText(`${window.location.origin}/auth?invite=${token}`);
+    const { SITE_URL } = await import("@/lib/site");
+    await navigator.clipboard.writeText(`${SITE_URL}/auth?invite=${token}`);
     toast.success("Enlace copiado");
   };
+
   const cancelInv = async (id: string) => {
     const { error } = await supabase.from("invitations").delete().eq("id", id);
     if (error) toast.error(error.message); else { toast.success("Cancelada"); load(); }
