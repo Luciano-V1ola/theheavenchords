@@ -275,20 +275,22 @@ export default function Index() {
             <Helmet>
               <title>{`${viewingGlobal.title} | The Heaven Chords`}</title>
               <meta name="description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en tono ${viewingGlobal.song_key}${viewingGlobal.bpm ? `, ${viewingGlobal.bpm} BPM` : ""}${viewingGlobal.time_signature ? `, compás ${viewingGlobal.time_signature}` : ""}. The Heaven Chords.`} />
-              <link rel="canonical" href={`https://theheavenchords.lovable.app${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`} />
+              <link rel="canonical" href={siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title))} />
               <meta property="og:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
               <meta property="og:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
-              <meta property="og:url" content={`https://theheavenchords.lovable.app${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`} />
+              <meta property="og:url" content={siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title))} />
               <meta property="og:type" content="music.song" />
               <meta name="twitter:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
               <meta name="twitter:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
+              <meta name="twitter:url" content={siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title))} />
             </Helmet>
             <SongViewer
               key={`catalog-${viewingGlobal.id}`}
               song={{ ...viewingGlobal, source: "catalog" }}
               onBack={closeCatalogViewer}
-              shareUrl={`${window.location.origin}${songPath((viewingGlobal as any).slug, viewingGlobal.title)}`}
+              shareUrl={siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title))}
             />
+
           </>
         ) : openSetlist && current ? (
           <SetlistDetail church={current} setlist={openSetlist} onBack={() => setOpenSetlist(null)} />
