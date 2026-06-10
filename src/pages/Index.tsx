@@ -5,6 +5,7 @@ import { useChurch } from "@/hooks/useChurch";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { slugify, songPath } from "@/lib/slug";
+import { siteUrl } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
