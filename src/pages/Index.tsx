@@ -201,11 +201,17 @@ export default function Index() {
             {isModerator && <Shield className="w-4 h-4 text-primary" aria-label="Moderador" />}
           </div>
           <h1 className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
-            <span className="inline-flex items-center gap-2 justify-center">
+            <button
+              type="button"
+              onClick={() => { setViewingGlobal(null); setOpenSetlist(null); navigate("/"); }}
+              className="inline-flex items-center gap-2 justify-center hover:opacity-80 transition-opacity"
+              aria-label="Volver al inicio"
+            >
               <Music className="w-5 h-5 text-primary" />
               The Heaven Chords
-            </span>
+            </button>
           </h1>
+
           <div className="flex items-center gap-1 justify-end">
             {/* Engranaje único de configuración de iglesia */}
             {user && current && (
