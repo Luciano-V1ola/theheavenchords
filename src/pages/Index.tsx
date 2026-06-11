@@ -318,6 +318,7 @@ export default function Index() {
               <TabsTrigger value="catalog">Catálogo</TabsTrigger>
               <TabsTrigger value="lists" disabled={!current}>Listas</TabsTrigger>
               {isOwnerOrMod && <TabsTrigger value="review">Revisión</TabsTrigger>}
+              {isAppOwner && <TabsTrigger value="global"><Crown className="w-4 h-4 mr-1" /> Global</TabsTrigger>}
               {current && (
                 <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1" /> Iglesia</TabsTrigger>
               )}
