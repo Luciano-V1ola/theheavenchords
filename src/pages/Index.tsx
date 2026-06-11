@@ -22,6 +22,7 @@ import SetlistsView, { Setlist } from "@/components/SetlistsView";
 import SetlistDetail from "@/components/SetlistDetail";
 import SongViewer from "@/components/SongViewer";
 import OwnerReview from "@/components/OwnerReview";
+import GlobalAdmin from "@/components/GlobalAdmin";
 import ChurchSettings from "@/components/ChurchSettings";
 import AddToSetlistDialog from "@/components/AddToSetlistDialog";
 import ProfileDialog from "@/components/ProfileDialog";
