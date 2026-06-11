@@ -346,6 +346,10 @@ export default function Index() {
               <TabsContent value="review"><OwnerReview /></TabsContent>
             )}
 
+            {isAppOwner && (
+              <TabsContent value="global"><GlobalAdmin /></TabsContent>
+            )}
+
             {current && (
               <TabsContent value="settings">
                 <ChurchSettings church={current} onBack={() => setTab("catalog")} />
