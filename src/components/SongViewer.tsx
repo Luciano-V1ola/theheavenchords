@@ -203,14 +203,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             {scrolling ? <><Pause className="w-4 h-4 mr-1" /> Detener</> : <><Play className="w-4 h-4 mr-1" /> Auto-scroll</>}
           </Button>
           <Button size="sm" variant="outline" onClick={copy}><Copy className="w-4 h-4 mr-1" /> Copiar</Button>
-          {shareUrl && (
-            <Button size="sm" variant="outline" onClick={async () => {
-              try { await navigator.clipboard.writeText(shareUrl); toast.success("Enlace copiado"); }
-              catch { toast.error("No se pudo copiar"); }
-            }}>
-              <Link2 className="w-4 h-4 mr-1" /> Copiar enlace
-            </Button>
-          )}
+          {shareUrl && <ShareMenu url={shareUrl} title={song.title} />}
           {canDraw && (
             <Button size="sm" variant={drawMode ? "default" : "outline"} onClick={() => setDrawMode(d => !d)} title="Dibujar sobre la partitura">
               <Brush className="w-4 h-4 mr-1" /> {drawMode ? "Dibujando" : "Dibujar"}
