@@ -22,13 +22,14 @@ import SetlistsView, { Setlist } from "@/components/SetlistsView";
 import SetlistDetail from "@/components/SetlistDetail";
 import SongViewer from "@/components/SongViewer";
 import OwnerReview from "@/components/OwnerReview";
+import GlobalAdmin from "@/components/GlobalAdmin";
 import ChurchSettings from "@/components/ChurchSettings";
 import AddToSetlistDialog from "@/components/AddToSetlistDialog";
 import ProfileDialog from "@/components/ProfileDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import ThemeChoiceDialog from "@/components/ThemeChoiceDialog";
 
-type Tab = "catalog" | "lists" | "review" | "settings";
+type Tab = "catalog" | "lists" | "review" | "settings" | "global";
 type CatalogViewerSong = GlobalSong & { source: "catalog" };
 
 export default function Index() {
@@ -317,6 +318,7 @@ export default function Index() {
               <TabsTrigger value="catalog">Catálogo</TabsTrigger>
               <TabsTrigger value="lists" disabled={!current}>Listas</TabsTrigger>
               {isOwnerOrMod && <TabsTrigger value="review">Revisión</TabsTrigger>}
+              {isAppOwner && <TabsTrigger value="global"><Crown className="w-4 h-4 mr-1" /> Global</TabsTrigger>}
               {current && (
                 <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1" /> Iglesia</TabsTrigger>
               )}
@@ -342,6 +344,10 @@ export default function Index() {
 
             {isOwnerOrMod && (
               <TabsContent value="review"><OwnerReview /></TabsContent>
+            )}
+
+            {isAppOwner && (
+              <TabsContent value="global"><GlobalAdmin /></TabsContent>
             )}
 
             {current && (
