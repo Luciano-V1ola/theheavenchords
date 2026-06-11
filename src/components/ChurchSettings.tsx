@@ -264,31 +264,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
         )}
       </Card>
 
-      {/* Moderadores globales (solo Dueño de la app) */}
-      {isAppOwner && (
-        <Card className="p-6 space-y-3">
-          <h3 className="font-semibold flex items-center gap-2"><Shield className="w-4 h-4" /> Moderadores globales (app)</h3>
-          <p className="text-xs text-muted-foreground">
-            Los moderadores pueden editar y enviar canciones del catálogo a Revisión, pero no eliminarlas definitivamente.
-          </p>
-          <div className="flex gap-2">
-            <Input value={modEmail} onChange={e => setModEmail(e.target.value)} placeholder="email del usuario" />
-            <Button onClick={promoteModerator}>Asignar</Button>
-          </div>
-          <div className="space-y-1">
-            {mods.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin moderadores asignados.</p>
-            ) : mods.map(m => (
-              <div key={m.user_id} className="flex items-center gap-2 text-sm border-b pb-1 last:border-0">
-                <span className="flex-1">{m.display_name || "Usuario"}</span>
-                <Button size="sm" variant="outline" onClick={() => demoteModerator(m.user_id)}>
-                  <ShieldOff className="w-3 h-3 mr-1" /> Quitar
-                </Button>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
+      {/* La gestión de moderadores globales se trasladó al Panel Global. */}
 
       {/* Acciones destructivas: salir o eliminar iglesia */}
       <Card className="p-6 space-y-3 border-destructive/30">
