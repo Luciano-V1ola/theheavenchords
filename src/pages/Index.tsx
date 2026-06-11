@@ -279,18 +279,28 @@ export default function Index() {
         ) : viewingGlobal ? (
           // Visor del CATÁLOGO. Independiente del visor de listas.
           <>
-            <Helmet>
-              <title>{`${viewingGlobal.title} | The Heaven Chords`}</title>
-              <meta name="description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en tono ${viewingGlobal.song_key}${viewingGlobal.bpm ? `, ${viewingGlobal.bpm} BPM` : ""}${viewingGlobal.time_signature ? `, compás ${viewingGlobal.time_signature}` : ""}. The Heaven Chords.`} />
-              <link rel="canonical" href={siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title))} />
-              <meta property="og:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
-              <meta property="og:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
-              <meta property="og:url" content={siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title))} />
-              <meta property="og:type" content="music.song" />
-              <meta name="twitter:title" content={`${viewingGlobal.title} | The Heaven Chords`} />
-              <meta name="twitter:description" content={`Acordes de ${viewingGlobal.title}${viewingGlobal.artist ? ` - ${viewingGlobal.artist}` : ""} en The Heaven Chords.`} />
-              <meta name="twitter:url" content={siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title))} />
-            </Helmet>
+            {(() => {
+              const url = siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title));
+              const title = `${viewingGlobal.title} - Acordes, Letra, BPM, Compás y Transposición | The Heaven Chords`;
+              const description = `Acordes, letra, BPM, compás, tono y transposición de ${viewingGlobal.title}${viewingGlobal.artist ? ` de ${viewingGlobal.artist}` : ""} en The Heaven Chords.`;
+              return (
+                <Helmet>
+                  <html lang="es" />
+                  <title>{title}</title>
+                  <meta name="description" content={description} />
+                  <link rel="canonical" href={url} />
+                  <meta property="og:title" content={title} />
+                  <meta property="og:description" content={description} />
+                  <meta property="og:url" content={url} />
+                  <meta property="og:type" content="music.song" />
+                  <meta property="og:locale" content="es_ES" />
+                  <meta name="twitter:card" content="summary_large_image" />
+                  <meta name="twitter:title" content={title} />
+                  <meta name="twitter:description" content={description} />
+                  <meta name="twitter:url" content={url} />
+                </Helmet>
+              );
+            })()}
             <SongViewer
               key={`catalog-${viewingGlobal.id}`}
               song={{ ...viewingGlobal, source: "catalog" }}
