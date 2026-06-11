@@ -28,7 +28,7 @@ import ProfileDialog from "@/components/ProfileDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import ThemeChoiceDialog from "@/components/ThemeChoiceDialog";
 
-type Tab = "catalog" | "lists" | "review" | "settings";
+type Tab = "catalog" | "lists" | "review" | "settings" | "global";
 type CatalogViewerSong = GlobalSong & { source: "catalog" };
 
 export default function Index() {
