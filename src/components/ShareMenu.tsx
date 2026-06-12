@@ -86,7 +86,7 @@ export default function ShareMenu({ url, title, size = "sm", variant = "outline"
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button size={size as any} variant={variant}>
-          <Share2 className="w-4 h-4 mr-1" /> Compartir
+          <Share2 className="w-4 h-4 mr-1" /> {label}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
