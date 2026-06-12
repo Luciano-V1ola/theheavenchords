@@ -14,6 +14,7 @@ type Props = {
   title?: string;
   size?: "sm" | "default" | "icon";
   variant?: "outline" | "ghost" | "default" | "secondary";
+  label?: string;
 };
 
 // Menú "Compartir" reutilizable: WhatsApp, Facebook, X, Telegram, Discord, Gmail y copiar link.
