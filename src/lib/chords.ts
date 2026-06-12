@@ -198,12 +198,42 @@ export function chordLineToDegrees(line: string, currentKey: string, mode: "degr
   return out;
 }
 
-// Línea de solo acordes (todas sus palabras parecen acordes O grados romanos)
+// Sufijos válidos de acorde (calidad + extensiones). Lista cerrada para evitar
+// falsos positivos como "A veces" o "Intro".
+// Ej: "", "m", "maj7", "m7b5", "sus4", "add9", "dim", "aug", "7", "9", "13", "6/9", "maj9", "m6"...
+const CHORD_SUFFIX_RE = /^(m|maj|min|dim|aug|sus|add|°|\+)?(?:maj)?(?:[2-9]|1[0-3])?(?:sus[24])?(?:add[0-9]+)?(?:[b#](?:5|9|11|13))*$/;
+
+// ¿La palabra es un acorde real?
+// Permite raíz A-G con # o b, sufijo válido (calidad/extensiones) y opcional bajo "/X".
+export function isChord(word: string): boolean {
+  const m = word.match(/^([A-G])([#b])?([^/]*)(?:\/([A-G])([#b])?)?$/);
+  if (!m) return false;
+  const [, , , suffix = "", bassRoot, bassAcc] = m;
+  // Raíz ya validada por el grupo. Validamos sufijo y bajo.
+  if (suffix && !CHORD_SUFFIX_RE.test(suffix)) return false;
+  if (bassRoot !== undefined) {
+    // Si hay barra, el bajo debe ser nota válida (ya cubierto por el regex)
+    if (bassAcc && bassAcc !== "#" && bassAcc !== "b") return false;
+  }
+  return true;
+}
+
+// Línea de solo acordes (todas sus palabras son acordes O grados romanos).
+// Requiere al menos un token "fuerte" (con sufijo o más de una letra) cuando hay
+// una sola palabra, para evitar que líneas de una sola letra ("A", "E") que en
+// realidad son letra de canción sean tratadas como acordes.
 export function isChordLine(line: string): boolean {
   const words = line.trim().split(/\s+/).filter(Boolean);
   if (!words.length) return false;
-  const re = /^[A-G][#b]?[a-zA-Z0-9]*(?:\/[A-G][#b]?)?$/;
-  return words.every(w => re.test(w) || ROMAN_RE.test(w));
+  const allValid = words.every(w => isChord(w) || ROMAN_RE.test(w));
+  if (!allValid) return false;
+  // Si es una sola palabra y es solo una nota natural sin sufijo (A, B, C…),
+  // probablemente es letra. Pedimos al menos 2 caracteres o algún símbolo.
+  if (words.length === 1) {
+    const w = words[0];
+    if (/^[A-G]$/.test(w)) return false;
+  }
+  return true;
 }
 
 // ¿La línea está escrita en grados? (al menos un token romano y ninguno claramente de letra de acorde extraña)
