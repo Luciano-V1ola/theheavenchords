@@ -259,6 +259,16 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
+                {user && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => toggleFav(s.id)}
+                    title={isFavorite(s.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
+                  >
+                    <Star className={`w-4 h-4 ${isFavorite(s.id) ? "text-yellow-500 fill-yellow-500" : ""}`} />
+                  </Button>
+                )}
                 <Button size="sm" variant="outline" onClick={() => onView(s)}>
                   <Eye className="w-4 h-4 mr-1" /> Ver
                 </Button>
