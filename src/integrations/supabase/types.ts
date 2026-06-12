@@ -338,6 +338,35 @@ export type Database = {
           },
         ]
       }
+      user_favorites: {
+        Row: {
+          created_at: string
+          global_song_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          global_song_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          global_song_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_global_song_id_fkey"
+            columns: ["global_song_id"]
+            isOneToOne: false
+            referencedRelation: "global_songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_global_roles: {
         Row: {
           created_at: string

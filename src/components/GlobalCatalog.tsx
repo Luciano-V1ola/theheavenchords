@@ -8,9 +8,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Search, Eye, ListPlus, Clock, X, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Eye, ListPlus, Clock, X, Pencil, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { Membership } from "@/hooks/useChurch";
 
 // Canción del catálogo global
@@ -49,6 +50,7 @@ function unpackLyrics(lyrics: string): { font: SongFont; clean: string } {
 export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props) {
   const { user } = useAuth();
   const { isOwner, isOwnerOrMod, isModerator } = useGlobalRole();
+  const { isFavorite, toggle: toggleFav } = useFavorites();
   const [songs, setSongs] = useState<GlobalSong[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
@@ -257,6 +259,16 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
+                {user && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => toggleFav(s.id)}
+                    title={isFavorite(s.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
+                  >
+                    <Star className={`w-4 h-4 ${isFavorite(s.id) ? "text-yellow-500 fill-yellow-500" : ""}`} />
+                  </Button>
+                )}
                 <Button size="sm" variant="outline" onClick={() => onView(s)}>
                   <Eye className="w-4 h-4 mr-1" /> Ver
                 </Button>

@@ -198,12 +198,42 @@ export function chordLineToDegrees(line: string, currentKey: string, mode: "degr
   return out;
 }
 
-// Línea de solo acordes (todas sus palabras parecen acordes O grados romanos)
+// Sufijos válidos de acorde (calidad + extensiones). Lista cerrada para evitar
+// falsos positivos como "A veces" o "Intro".
+// Ej: "", "m", "maj7", "m7b5", "sus4", "add9", "dim", "aug", "7", "9", "13", "6/9", "maj9", "m6"...
+const CHORD_SUFFIX_RE = /^(m|maj|min|dim|aug|sus|add|°|\+)?(?:maj)?(?:[2-9]|1[0-3])?(?:sus[24])?(?:add[0-9]+)?(?:[b#](?:5|9|11|13))*$/;
+
+// ¿La palabra es un acorde real?
+// Permite raíz A-G con # o b, sufijo válido (calidad/extensiones) y opcional bajo "/X".
+export function isChord(word: string): boolean {
+  const m = word.match(/^([A-G])([#b])?([^/]*)(?:\/([A-G])([#b])?)?$/);
+  if (!m) return false;
+  const [, , , suffix = "", bassRoot, bassAcc] = m;
+  // Raíz ya validada por el grupo. Validamos sufijo y bajo.
+  if (suffix && !CHORD_SUFFIX_RE.test(suffix)) return false;
+  if (bassRoot !== undefined) {
+    // Si hay barra, el bajo debe ser nota válida (ya cubierto por el regex)
+    if (bassAcc && bassAcc !== "#" && bassAcc !== "b") return false;
+  }
+  return true;
+}
+
+// Línea de solo acordes (todas sus palabras son acordes O grados romanos).
+// Requiere al menos un token "fuerte" (con sufijo o más de una letra) cuando hay
+// una sola palabra, para evitar que líneas de una sola letra ("A", "E") que en
+// realidad son letra de canción sean tratadas como acordes.
 export function isChordLine(line: string): boolean {
   const words = line.trim().split(/\s+/).filter(Boolean);
   if (!words.length) return false;
-  const re = /^[A-G][#b]?[a-zA-Z0-9]*(?:\/[A-G][#b]?)?$/;
-  return words.every(w => re.test(w) || ROMAN_RE.test(w));
+  const allValid = words.every(w => isChord(w) || ROMAN_RE.test(w));
+  if (!allValid) return false;
+  // Si es una sola palabra y es solo una nota natural sin sufijo (A, B, C…),
+  // probablemente es letra. Pedimos al menos 2 caracteres o algún símbolo.
+  if (words.length === 1) {
+    const w = words[0];
+    if (/^[A-G]$/.test(w)) return false;
+  }
+  return true;
 }
 
 // ¿La línea está escrita en grados? (al menos un token romano y ninguno claramente de letra de acorde extraña)
@@ -233,8 +263,25 @@ export function transposeChordLine(line: string, semitones: number, currentKey =
 
 // Palabras clave de sección que se renderizan en negrita.
 // Acepta variantes con número opcional (Coro 2, Verso2, Puente 3, etc.) y dos puntos opcionales.
-// Case-insensitive (la /i ya cubre FIN/fin, CORO/coro, etc.).
-const SECTION_RE = /^\s*(coro|estrofa|verso|pre[\s-]?coro|puente|intro|outro|final|fin|interludio|tag|bridge|chorus)\s*\d*\s*:?\s*$/i;
+// Case-insensitive y soporta acentos/idiomas (es/en/pt).
+const SECTION_KEYWORDS = [
+  "coro", "chorus",
+  "estrofa", "verso", "verse", "vers[ií]culo",
+  "pre[\\s\\-]?coro", "pre[\\s\\-]?chorus", "pr[eé][\\s\\-]?refr[aã]o",
+  "estribillo", "refr[aáã]n", "refr[aã]o", "refrain",
+  "puente", "bridge", "ponte",
+  "intro", "introduccion", "introducci[oó]n",
+  "outro", "ending",
+  "final", "fin",
+  "interludio", "interlude", "interl[uú]dio",
+  "instrumental",
+  "punteo", "solo", "guitarra", "lead", "riff",
+  "tag",
+];
+const SECTION_RE = new RegExp(
+  `^\\s*(?:${SECTION_KEYWORDS.join("|")})\\s*\\d*\\s*:?\\s*$`,
+  "i"
+);
 export function isSectionLabel(line: string): boolean {
   return SECTION_RE.test(line);
 }
@@ -262,25 +309,27 @@ export function renderLines(
   lyrics: string,
   semitones: number,
   currentKey = "C",
-  displayMode: "chords" | "degrees" | "both" = "chords",
+  displayMode: "chords" | "degrees" | "both" | "lyrics" = "chords",
   originalKey?: string,
 ) {
   const baseKey = originalKey && noteIndex(originalKey) !== -1 ? originalKey : currentKey;
   const raw = lyrics.split("\n");
   return raw.map((line, idx) => {
+    if (isSectionLabel(line)) {
+      return { type: "section" as const, text: line };
+    }
     if (isTitleLine(line, idx)) {
       return { type: "title" as const, text: line };
     }
     if (isChordLine(line)) {
-      // Si la línea fue escrita en grados, primero la pasamos a acordes en el tono ORIGINAL
+      if (displayMode === "lyrics") {
+        return { type: "skip" as const, text: "" };
+      }
       const normalized = isDegreeLine(line) ? degreeLineToChords(line, baseKey) : line;
       const text = displayMode === "chords"
         ? transposeChordLine(normalized, semitones, currentKey)
         : chordLineToDegrees(normalized, currentKey, displayMode, semitones);
       return { type: "chord" as const, text };
-    }
-    if (isSectionLabel(line)) {
-      return { type: "section" as const, text: line };
     }
     return { type: "text" as const, text: line };
   });

@@ -16,20 +16,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Music, Plus, Settings, Crown, Shield, LogIn } from "lucide-react";
+import { Music, Plus, Settings, Crown, Shield, LogIn, Star } from "lucide-react";
 import GlobalCatalog, { GlobalSong } from "@/components/GlobalCatalog";
 import SetlistsView, { Setlist } from "@/components/SetlistsView";
 import SetlistDetail from "@/components/SetlistDetail";
 import SongViewer from "@/components/SongViewer";
 import OwnerReview from "@/components/OwnerReview";
 import GlobalAdmin from "@/components/GlobalAdmin";
+import FavoritesView from "@/components/FavoritesView";
 import ChurchSettings from "@/components/ChurchSettings";
 import AddToSetlistDialog from "@/components/AddToSetlistDialog";
 import ProfileDialog from "@/components/ProfileDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import ThemeChoiceDialog from "@/components/ThemeChoiceDialog";
 
-type Tab = "catalog" | "lists" | "review" | "settings" | "global";
+type Tab = "catalog" | "favorites" | "lists" | "review" | "settings" | "global";
 type CatalogViewerSong = GlobalSong & { source: "catalog" };
 
 export default function Index() {
@@ -316,6 +317,11 @@ export default function Index() {
           <Tabs value={tab} onValueChange={v => setTab(v as Tab)} className="space-y-4">
             <TabsList className="w-full flex-wrap h-auto">
               <TabsTrigger value="catalog">Catálogo</TabsTrigger>
+              {user && (
+                <TabsTrigger value="favorites">
+                  <Star className="w-4 h-4 mr-1 text-yellow-500 fill-yellow-500" /> Favoritos
+                </TabsTrigger>
+              )}
               <TabsTrigger value="lists" disabled={!current}>Listas</TabsTrigger>
               {isOwnerOrMod && <TabsTrigger value="review">Revisión</TabsTrigger>}
               {isAppOwner && <TabsTrigger value="global"><Crown className="w-4 h-4 mr-1" /> Global</TabsTrigger>}
@@ -331,6 +337,12 @@ export default function Index() {
                 onAddToSetlist={s => setAddToList(s)}
               />
             </TabsContent>
+
+            {user && (
+              <TabsContent value="favorites">
+                <FavoritesView onView={openCatalogSong} />
+              </TabsContent>
+            )}
 
             <TabsContent value="lists">
               {current ? (
