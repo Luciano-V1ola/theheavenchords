@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Copy, Trash2, UserPlus, LogOut, Shield, ShieldOff, Crown, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Trash2, UserPlus, LogOut, Shield, ShieldOff, Crown, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import type { Membership } from "@/hooks/useChurch";
 import { SITE_URL } from "@/lib/site";
+import ShareMenu from "./ShareMenu";
 
 type Member = { id: string; user_id: string; role: "admin" | "member"; display_name?: string | null };
 type Invitation = { id: string; email: string; role: "admin" | "member"; token: string; accepted_at: string | null };
