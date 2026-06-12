@@ -317,6 +317,11 @@ export default function Index() {
           <Tabs value={tab} onValueChange={v => setTab(v as Tab)} className="space-y-4">
             <TabsList className="w-full flex-wrap h-auto">
               <TabsTrigger value="catalog">Catálogo</TabsTrigger>
+              {user && (
+                <TabsTrigger value="favorites">
+                  <Star className="w-4 h-4 mr-1 text-yellow-500 fill-yellow-500" /> Favoritos
+                </TabsTrigger>
+              )}
               <TabsTrigger value="lists" disabled={!current}>Listas</TabsTrigger>
               {isOwnerOrMod && <TabsTrigger value="review">Revisión</TabsTrigger>}
               {isAppOwner && <TabsTrigger value="global"><Crown className="w-4 h-4 mr-1" /> Global</TabsTrigger>}
@@ -332,6 +337,12 @@ export default function Index() {
                 onAddToSetlist={s => setAddToList(s)}
               />
             </TabsContent>
+
+            {user && (
+              <TabsContent value="favorites">
+                <FavoritesView onView={openCatalogSong} />
+              </TabsContent>
+            )}
 
             <TabsContent value="lists">
               {current ? (
