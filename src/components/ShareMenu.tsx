@@ -20,7 +20,7 @@ type Props = {
 // Menú "Compartir" reutilizable: WhatsApp, Facebook, X, Telegram, Discord, Gmail y copiar link.
 // Discord no expone share URL — abrimos su web y copiamos el enlace al portapapeles
 // para que el usuario lo pegue en el canal/DM.
-export default function ShareMenu({ url, title, size = "sm", variant = "outline" }: Props) {
+export default function ShareMenu({ url, title, size = "sm", variant = "outline", label = "Compartir" }: Props) {
   const text = title ? `${title} — The Heaven Chords` : "The Heaven Chords";
 
   const open = (href: string) => window.open(href, "_blank", "noopener,noreferrer");
