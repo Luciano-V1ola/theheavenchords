@@ -208,7 +208,11 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
           ) : invs.filter(i => !i.accepted_at).map(i => (
             <div key={i.id} className="flex items-center gap-2 flex-wrap text-sm border-b pb-2 last:border-0">
               <span className="flex-1 break-all">{i.email} <span className="text-muted-foreground">({i.role})</span></span>
-              <Button size="sm" variant="outline" onClick={() => copyLink(i.token)}><Copy className="w-3 h-3 mr-1" /> Enlace</Button>
+              <ShareMenu
+                url={`${SITE_URL}/auth?invite=${i.token}`}
+                title={`Invitación a ${church.name}`}
+                label="Enviar link de invitación"
+              />
               <Button size="sm" variant="destructive" onClick={() => cancelInv(i.id)}><Trash2 className="w-3 h-3" /></Button>
             </div>
           ))}
