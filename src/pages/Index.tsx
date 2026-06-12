@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Music, Plus, Settings, Crown, Shield, LogIn } from "lucide-react";
+import { Music, Plus, Settings, Crown, Shield, LogIn, Star } from "lucide-react";
 import GlobalCatalog, { GlobalSong } from "@/components/GlobalCatalog";
 import SetlistsView, { Setlist } from "@/components/SetlistsView";
 import SetlistDetail from "@/components/SetlistDetail";
