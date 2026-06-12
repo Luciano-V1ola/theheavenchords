@@ -87,7 +87,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
     if (error) { toast.error(error.message); return; }
     const link = `${SITE_URL}/auth?invite=${data.token}`;
     await navigator.clipboard.writeText(link).catch(() => {});
-    toast.success("Invitación creada y enlace copiado");
+    toast.success("Invitación creada. Enviá el enlace desde la lista.");
     setEmail("");
     load();
   };
