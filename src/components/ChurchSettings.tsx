@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Copy, Trash2, UserPlus, LogOut, Shield, ShieldOff, Crown, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Trash2, UserPlus, LogOut, Shield, ShieldOff, Crown, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import type { Membership } from "@/hooks/useChurch";
 import { SITE_URL } from "@/lib/site";
+import ShareMenu from "./ShareMenu";
 
 type Member = { id: string; user_id: string; role: "admin" | "member"; display_name?: string | null };
 type Invitation = { id: string; email: string; role: "admin" | "member"; token: string; accepted_at: string | null };
@@ -86,7 +87,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
     if (error) { toast.error(error.message); return; }
     const link = `${SITE_URL}/auth?invite=${data.token}`;
     await navigator.clipboard.writeText(link).catch(() => {});
-    toast.success("Invitación creada y enlace copiado");
+    toast.success("Invitación creada. Enviá el enlace desde la lista.");
     setEmail("");
     load();
   };
@@ -207,7 +208,11 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
           ) : invs.filter(i => !i.accepted_at).map(i => (
             <div key={i.id} className="flex items-center gap-2 flex-wrap text-sm border-b pb-2 last:border-0">
               <span className="flex-1 break-all">{i.email} <span className="text-muted-foreground">({i.role})</span></span>
-              <Button size="sm" variant="outline" onClick={() => copyLink(i.token)}><Copy className="w-3 h-3 mr-1" /> Enlace</Button>
+              <ShareMenu
+                url={`${SITE_URL}/auth?invite=${i.token}`}
+                title={`Invitación a ${church.name}`}
+                label="Enviar link de invitación"
+              />
               <Button size="sm" variant="destructive" onClick={() => cancelInv(i.id)}><Trash2 className="w-3 h-3" /></Button>
             </div>
           ))}

@@ -14,12 +14,13 @@ type Props = {
   title?: string;
   size?: "sm" | "default" | "icon";
   variant?: "outline" | "ghost" | "default" | "secondary";
+  label?: string;
 };
 
 // Menú "Compartir" reutilizable: WhatsApp, Facebook, X, Telegram, Discord, Gmail y copiar link.
 // Discord no expone share URL — abrimos su web y copiamos el enlace al portapapeles
 // para que el usuario lo pegue en el canal/DM.
-export default function ShareMenu({ url, title, size = "sm", variant = "outline" }: Props) {
+export default function ShareMenu({ url, title, size = "sm", variant = "outline", label = "Compartir" }: Props) {
   const text = title ? `${title} — The Heaven Chords` : "The Heaven Chords";
 
   const open = (href: string) => window.open(href, "_blank", "noopener,noreferrer");
@@ -85,7 +86,7 @@ export default function ShareMenu({ url, title, size = "sm", variant = "outline"
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button size={size as any} variant={variant}>
-          <Share2 className="w-4 h-4 mr-1" /> Compartir
+          <Share2 className="w-4 h-4 mr-1" /> {label}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
