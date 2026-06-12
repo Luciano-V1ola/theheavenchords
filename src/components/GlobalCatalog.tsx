@@ -50,6 +50,7 @@ function unpackLyrics(lyrics: string): { font: SongFont; clean: string } {
 export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props) {
   const { user } = useAuth();
   const { isOwner, isOwnerOrMod, isModerator } = useGlobalRole();
+  const { isFavorite, toggle: toggleFav } = useFavorites();
   const [songs, setSongs] = useState<GlobalSong[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
