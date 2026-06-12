@@ -8,9 +8,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Search, Eye, ListPlus, Clock, X, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Eye, ListPlus, Clock, X, Pencil, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { Membership } from "@/hooks/useChurch";
 
 // Canción del catálogo global
