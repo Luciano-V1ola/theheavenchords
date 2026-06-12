@@ -309,25 +309,27 @@ export function renderLines(
   lyrics: string,
   semitones: number,
   currentKey = "C",
-  displayMode: "chords" | "degrees" | "both" = "chords",
+  displayMode: "chords" | "degrees" | "both" | "lyrics" = "chords",
   originalKey?: string,
 ) {
   const baseKey = originalKey && noteIndex(originalKey) !== -1 ? originalKey : currentKey;
   const raw = lyrics.split("\n");
   return raw.map((line, idx) => {
+    if (isSectionLabel(line)) {
+      return { type: "section" as const, text: line };
+    }
     if (isTitleLine(line, idx)) {
       return { type: "title" as const, text: line };
     }
     if (isChordLine(line)) {
-      // Si la línea fue escrita en grados, primero la pasamos a acordes en el tono ORIGINAL
+      if (displayMode === "lyrics") {
+        return { type: "skip" as const, text: "" };
+      }
       const normalized = isDegreeLine(line) ? degreeLineToChords(line, baseKey) : line;
       const text = displayMode === "chords"
         ? transposeChordLine(normalized, semitones, currentKey)
         : chordLineToDegrees(normalized, currentKey, displayMode, semitones);
       return { type: "chord" as const, text };
-    }
-    if (isSectionLabel(line)) {
-      return { type: "section" as const, text: line };
     }
     return { type: "text" as const, text: line };
   });
