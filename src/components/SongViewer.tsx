@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush } from "lucide-react";
+import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush, Maximize2, X } from "lucide-react";
 import ShareMenu from "./ShareMenu";
 import { toast } from "sonner";
 import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
@@ -11,8 +11,6 @@ import { SongFont } from "./SongFormFields";
 import SongOverlayCanvas from "./SongOverlayCanvas";
 import type { Drawing } from "./DrawingCanvas";
 
-// Visor reutilizable: recibe una canción ya cargada (catálogo global o item de setlist).
-// Soporta navegación entre canciones (anterior/siguiente y sidebar).
 export type ViewerSong = {
   id?: string;
   source?: "catalog" | "setlist" | "review";
@@ -30,20 +28,15 @@ type Props = {
   song: ViewerSong;
   onBack: () => void;
   onEdit?: () => void;
-  // Lista opcional de canciones para navegación (anterior/siguiente y sidebar)
   siblings?: ViewerSong[];
   onSelect?: (s: ViewerSong) => void;
-  // Dibujo opcional sobre la partitura (solo dentro de listas de iglesia)
   drawing?: Drawing | null;
   canDraw?: boolean;
   onSaveDrawing?: (d: Drawing) => Promise<void> | void;
-  // Si se provee, persiste el cambio de tono (solo para listas)
   onChangeKey?: (newKey: string) => Promise<void> | void;
-  // URL única de la canción para compartir.
   shareUrl?: string;
 };
 
-// Extrae una línea de metadata "[font:arial]" si existe
 function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
   const m = lyrics.match(/^\[font:(arial|calibri)\]\s*\n?/i);
   if (!m) return { font: null, clean: lyrics };
@@ -52,22 +45,28 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
 
 export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing, onChangeKey, shareUrl }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
-  const [displayMode, setDisplayMode] = useState<"chords" | "degrees">("chords");
+  const [displayMode, setDisplayMode] = useState<"chords" | "degrees" | "lyrics">("chords");
   const [scrolling, setScrolling] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
+  const [musicianMode, setMusicianMode] = useState(false);
   const scrollRef = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
-  // Datos derivados de la canción (limpia metadata de fuente)
   const { font: embeddedFont, clean } = useMemo(() => extractFont(song.lyrics), [song.lyrics]);
   const font: SongFont = song.font ?? embeddedFont ?? "arial";
   const fontClass = font === "calibri" ? "font-calibri" : "font-arial";
 
-  // Si cambia la canción, resetea el tono al original
   useEffect(() => { setCurrentKey(song.song_key); window.scrollTo({ top: 0 }); }, [song.song_key, song.id, song.title]);
 
-  // Auto-scroll
+  // ESC sale del modo músico
+  useEffect(() => {
+    if (!musicianMode) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMusicianMode(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [musicianMode]);
+
   useEffect(() => {
     if (!scrolling) {
       if (scrollRef.current) { window.clearInterval(scrollRef.current); scrollRef.current = null; }
@@ -83,7 +82,6 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   const semitones = noteIndex(currentKey) - noteIndex(song.song_key);
   const lines = renderLines(clean, semitones, currentKey, displayMode, song.song_key);
 
-  // Cambia el tono y, si corresponde, lo persiste (listas)
   const changeKey = (k: string) => {
     setCurrentKey(k);
     onChangeKey?.(k);
@@ -101,22 +99,82 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
     toast.success("Copiado");
   };
 
-  // Navegación entre canciones del listado
   const idx = siblings?.findIndex((s) => {
-    if (s.id && song.id) {
-      return s.id === song.id && (s.source ?? null) === (song.source ?? null);
-    }
+    if (s.id && song.id) return s.id === song.id && (s.source ?? null) === (song.source ?? null);
     return s.title === song.title;
   }) ?? -1;
   const prev = idx > 0 ? siblings![idx - 1] : null;
   const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
+  const hasSiblings = !!(siblings && siblings.length > 1 && onSelect);
+
+  const sheet = (
+    <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
+      <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
+        {lines.map((l, i) => {
+          if (l.type === "skip") return null;
+          if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
+          if (l.type === "chord") return <div key={i} className="chord-line">{l.text || "\u00A0"}</div>;
+          if (l.type === "section") return <div key={i} className="section-line">{l.text}</div>;
+          return <div key={i}>{l.text || "\u00A0"}</div>;
+        })}
+      </pre>
+      {canDraw && !musicianMode && (
+        <SongOverlayCanvas
+          containerRef={sheetRef}
+          initial={drawing ?? null}
+          active={drawMode}
+          onSave={async (d) => { await onSaveDrawing?.(d); setDrawMode(false); }}
+          onExit={() => setDrawMode(false)}
+        />
+      )}
+    </Card>
+  );
+
+  // MODO MÚSICO: overlay fullscreen con interfaz mínima
+  if (musicianMode) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background overflow-auto">
+        <div className="max-w-4xl mx-auto p-4 space-y-3">
+          <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2 z-10">
+            <Button size="sm" variant="outline" onClick={() => setMusicianMode(false)} title="Salir del modo músico (Esc)">
+              <X className="w-4 h-4 mr-1" /> Salir
+            </Button>
+            <div className="flex-1 min-w-0">
+              <h2 className={`font-bold text-lg truncate ${fontClass}`}>{song.title}</h2>
+            </div>
+            <Button size="icon" variant="outline" onClick={() => transpose(-1)} title="Bajar tono"><Minus className="w-4 h-4" /></Button>
+            <span className="text-sm w-10 text-center">{currentKey}</span>
+            <Button size="icon" variant="outline" onClick={() => transpose(1)} title="Subir tono"><Plus className="w-4 h-4" /></Button>
+            <Button size="icon" variant="outline" onClick={() => setScrolling(s => !s)} title="Auto-scroll">
+              {scrolling ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            </Button>
+          </div>
+
+          {hasSiblings && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={!prev} onClick={() => prev && onSelect!(prev)} className="flex-1">
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                <span className="truncate">{prev ? prev.title : "Anterior"}</span>
+              </Button>
+              <Button variant="outline" size="sm" disabled={!next} onClick={() => next && onSelect!(next)} className="flex-1">
+                <span className="truncate">{next ? next.title : "Siguiente"}</span>
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          )}
+
+          {sheet}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
         <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4 mr-1" /> Volver</Button>
 
-        {siblings && siblings.length > 1 && onSelect && (
+        {hasSiblings && (
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" title="Lista de canciones">
@@ -126,12 +184,12 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             <SheetContent side="left" className="w-80 overflow-y-auto">
               <SheetHeader><SheetTitle>Canciones</SheetTitle></SheetHeader>
               <div className="mt-4 space-y-1">
-                {siblings.map((s) => {
+                {siblings!.map((s) => {
                   const active = s.id ? s.id === song.id : s.title === song.title;
                   return (
                     <button
                       key={s.id ?? s.title}
-                      onClick={() => { onSelect(s); setSidebarOpen(false); }}
+                      onClick={() => { onSelect!(s); setSidebarOpen(false); }}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                         active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                       }`}
@@ -147,7 +205,6 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
         )}
 
         <div className="flex-1 min-w-0">
-          {/* Título grande */}
           <h2 className={`font-bold text-xl sm:text-2xl truncate ${fontClass}`}>{song.title}</h2>
           {song.artist && <p className="text-sm text-muted-foreground truncate">{song.artist}</p>}
           {(song.bpm || song.time_signature) && (
@@ -161,14 +218,13 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
         {onEdit && <Button variant="outline" size="sm" onClick={onEdit}><Pencil className="w-4 h-4" /></Button>}
       </div>
 
-      {/* Navegación rápida */}
-      {siblings && siblings.length > 1 && onSelect && (
+      {hasSiblings && (
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled={!prev} onClick={() => prev && onSelect(prev)} className="flex-1">
+          <Button variant="outline" size="sm" disabled={!prev} onClick={() => prev && onSelect!(prev)} className="flex-1">
             <ChevronLeft className="w-4 h-4 mr-1" />
             <span className="truncate">{prev ? prev.title : "Anterior"}</span>
           </Button>
-          <Button variant="outline" size="sm" disabled={!next} onClick={() => next && onSelect(next)} className="flex-1">
+          <Button variant="outline" size="sm" disabled={!next} onClick={() => next && onSelect!(next)} className="flex-1">
             <span className="truncate">{next ? next.title : "Siguiente"}</span>
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
@@ -191,17 +247,21 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
           <div className="flex items-center gap-2">
             <span className="text-sm">Ver:</span>
             <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as any)}>
-              <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="chords">Acordes</SelectItem>
                 <SelectItem value="degrees">Grados</SelectItem>
+                <SelectItem value="lyrics">Solo Letra</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button size="sm" variant="outline" onClick={() => setScrolling(s => !s)}>
             {scrolling ? <><Pause className="w-4 h-4 mr-1" /> Detener</> : <><Play className="w-4 h-4 mr-1" /> Auto-scroll</>}
+          </Button>
+          <Button size="sm" variant="default" onClick={() => setMusicianMode(true)} title="Pantalla completa para tocar">
+            <Maximize2 className="w-4 h-4 mr-1" /> Modo Músico
           </Button>
           <Button size="sm" variant="outline" onClick={copy}><Copy className="w-4 h-4 mr-1" /> Copiar</Button>
           {shareUrl && <ShareMenu url={shareUrl} title={song.title} />}
@@ -213,25 +273,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
-        <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
-          {lines.map((l, i) => {
-            if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
-            if (l.type === "chord") return <div key={i} className="chord-line">{l.text || "\u00A0"}</div>;
-            if (l.type === "section") return <div key={i} className="section-line">{l.text}</div>;
-            return <div key={i}>{l.text || "\u00A0"}</div>;
-          })}
-        </pre>
-        {canDraw && (
-          <SongOverlayCanvas
-            containerRef={sheetRef}
-            initial={drawing ?? null}
-            active={drawMode}
-            onSave={async (d) => { await onSaveDrawing?.(d); setDrawMode(false); }}
-            onExit={() => setDrawMode(false)}
-          />
-        )}
-      </Card>
+      {sheet}
 
       {song.contributor_name !== undefined && (
         <p className="text-xs text-muted-foreground italic text-center">
