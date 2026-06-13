@@ -201,9 +201,8 @@ export default function Index() {
     window.addEventListener("popstate", onPop);
     return () => {
       window.removeEventListener("popstate", onPop);
-      // Limpiar el sentinel si quedó al tope (cambiamos de pantalla por UI).
-      const cur = window.history.state as any;
-      if (cur && cur.__sentinel === SENTINEL) window.history.back();
+      // El sentinel puede quedar en el history; es una entrada con la misma
+      // URL ("/") y se consumirá silenciosamente en el próximo Atrás.
     };
   }, [atRoot]);
 
