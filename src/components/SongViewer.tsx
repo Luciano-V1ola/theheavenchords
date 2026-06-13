@@ -50,6 +50,14 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
   const [musicianMode, setMusicianMode] = useState(false);
+  const [fontSize, setFontSize] = useState<number>(() => {
+    if (typeof window === "undefined") return 16;
+    const saved = parseInt(localStorage.getItem("song-font-size") || "", 10);
+    return Number.isFinite(saved) && saved >= 10 && saved <= 40 ? saved : 16;
+  });
+  useEffect(() => { try { localStorage.setItem("song-font-size", String(fontSize)); } catch {} }, [fontSize]);
+  const decFont = () => setFontSize(s => Math.max(10, s - 1));
+  const incFont = () => setFontSize(s => Math.min(40, s + 1));
   const scrollRef = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
