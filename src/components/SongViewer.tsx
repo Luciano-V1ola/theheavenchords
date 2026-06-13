@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,6 +10,8 @@ import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } 
 import { SongFont } from "./SongFormFields";
 import SongOverlayCanvas from "./SongOverlayCanvas";
 import type { Drawing } from "./DrawingCanvas";
+import { useWakeLock } from "@/hooks/useWakeLock";
+import { useHistoryBack } from "@/hooks/useHistoryBack";
 
 export type ViewerSong = {
   id?: string;
@@ -74,6 +76,13 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [musicianMode]);
+
+  // Atrás (Android/browser) sale del Modo Músico en lugar de cerrar la app.
+  const exitMusicianMode = useCallback(() => setMusicianMode(false), []);
+  useHistoryBack(musicianMode, exitMusicianMode);
+
+  // Mantener la pantalla encendida durante el Modo Músico (Wake Lock).
+  useWakeLock(musicianMode);
 
   useEffect(() => {
     if (!scrolling) {

@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import { useChurch } from "@/hooks/useChurch";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { slugify, songPath } from "@/lib/slug";
 import { siteUrl } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
+import { useHistoryBack } from "@/hooks/useHistoryBack";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -85,6 +86,8 @@ export default function Index() {
   useEffect(() => {
     if (!routeSlug) {
       setSlugNotFound(false);
+      // Si volvimos a "/" (por ej. con la flecha Atrás), cerrar el visor.
+      if (viewingGlobal) setViewingGlobal(null);
       return;
     }
     // Ya cargado el correcto
@@ -154,6 +157,56 @@ export default function Index() {
     supabase.from("churches").select("id").eq("created_by", user.id).maybeSingle()
       .then(({ data }) => setCreatedChurchId(data?.id ?? null));
   }, [user, memberships]);
+
+  // ===== Navegación tipo app nativa con botón Atrás de Android =====
+  // 1) Abrir un Setlist empuja una entrada en el history; Atrás lo cierra.
+  const closeSetlist = useCallback(() => setOpenSetlist(null), []);
+  useHistoryBack(!!openSetlist, closeSetlist);
+
+  // 2) "Presioná atrás de nuevo para salir" cuando estás en la pantalla raíz.
+  //    Mantiene una entrada sentinel en el history mientras el usuario está
+  //    en "/" sin nada abierto. Si presiona Atrás, mostramos el toast y
+  //    re-instalamos la entrada; un segundo Atrás dentro de 2s deja salir.
+  const location = useLocation();
+  const atRoot = location.pathname === "/" && !viewingGlobal && !openSetlist;
+  useEffect(() => {
+    if (!atRoot) return;
+    const SENTINEL = "__root_exit_sentinel";
+    let lastBackAt = 0;
+    let armed = true;
+
+    const pushSentinel = () => {
+      const cur = window.history.state as any;
+      if (!cur || cur.__sentinel !== SENTINEL) {
+        window.history.pushState({ __sentinel: SENTINEL }, "");
+      }
+    };
+    pushSentinel();
+
+    const onPop = () => {
+      if (!armed) return;
+      // Si el path cambió, dejamos que React Router maneje la navegación.
+      if (window.location.pathname !== "/") return;
+      const now = Date.now();
+      if (now - lastBackAt < 2000) {
+        // Segunda pulsación: permitir que la app se cierre.
+        armed = false;
+        window.history.back();
+        return;
+      }
+      lastBackAt = now;
+      toast("Presioná atrás de nuevo para salir");
+      pushSentinel();
+    };
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      // El sentinel puede quedar en el history; es una entrada con la misma
+      // URL ("/") y se consumirá silenciosamente en el próximo Atrás.
+    };
+  }, [atRoot]);
+
+
 
   const createChurch = async () => {
     if (!user || !newChurchName.trim()) return;
