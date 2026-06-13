@@ -201,7 +201,10 @@ export function chordLineToDegrees(line: string, currentKey: string, mode: "degr
 // Sufijos válidos de acorde (calidad + extensiones). Lista cerrada para evitar
 // falsos positivos como "A veces" o "Intro".
 // Ej: "", "m", "maj7", "m7b5", "sus4", "add9", "dim", "aug", "7", "9", "13", "6/9", "maj9", "m6"...
-const CHORD_SUFFIX_RE = /^(m|maj|min|dim|aug|sus|add|°|\+)?(?:maj)?(?:[2-9]|1[0-3])?(?:sus[24])?(?:add[0-9]+)?(?:[b#](?:5|9|11|13))*$/;
+// Sufijo de acorde. Acepta calidades (m, maj, M, min, dim, aug, sus, add, °, +),
+// extensiones numéricas (2..13) con M opcional al final (notación brasileña: F7M),
+// y alteraciones (b5, #9, etc). Ej válidos: "", m, 7, M7, 7M, maj7, m7b5, sus4, add9, dim7, aug, 6/9-style omitido.
+const CHORD_SUFFIX_RE = /^(m|M|maj|min|dim|aug|sus|add|°|\+)?(?:maj)?(?:[2-9]|1[0-3])?M?(?:sus[24])?(?:add[0-9]+)?(?:[b#](?:5|9|11|13))*$/;
 
 // ¿La palabra es un acorde real?
 // Permite raíz A-G con # o b, sufijo válido (calidad/extensiones) y opcional bajo "/X".
