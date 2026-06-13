@@ -153,6 +153,8 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             <Button size="icon" variant="outline" onClick={() => transpose(-1)} title="Bajar tono"><Minus className="w-4 h-4" /></Button>
             <span className="text-sm w-10 text-center">{currentKey}</span>
             <Button size="icon" variant="outline" onClick={() => transpose(1)} title="Subir tono"><Plus className="w-4 h-4" /></Button>
+            <Button size="icon" variant="outline" onClick={decFont} title="Reducir tamaño"><AArrowDown className="w-4 h-4" /></Button>
+            <Button size="icon" variant="outline" onClick={incFont} title="Aumentar tamaño"><AArrowUp className="w-4 h-4" /></Button>
             <Button size="icon" variant="outline" onClick={() => setScrolling(s => !s)} title="Auto-scroll">
               {scrolling ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
