@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,6 +10,8 @@ import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } 
 import { SongFont } from "./SongFormFields";
 import SongOverlayCanvas from "./SongOverlayCanvas";
 import type { Drawing } from "./DrawingCanvas";
+import { useWakeLock } from "@/hooks/useWakeLock";
+import { useHistoryBack } from "@/hooks/useHistoryBack";
 
 export type ViewerSong = {
   id?: string;
