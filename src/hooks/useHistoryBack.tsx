@@ -26,11 +26,9 @@ export function useHistoryBack(active: boolean, onBack: () => void) {
 
     return () => {
       window.removeEventListener("popstate", onPop);
-      // Si la capa se cerró por UI (no por Atrás), nuestra entrada sentinel
-      // sigue en el tope del history: la removemos para no dejar basura.
-      if (window.history.state && (window.history.state as any).__back === id) {
-        window.history.back();
-      }
+      // Nota: si la capa se cerró por UI (no por Atrás), la entrada sentinel
+      // queda en el history pero es inofensiva (misma URL). El siguiente
+      // Atrás simplemente la consumirá sin efecto visible.
     };
   }, [active, onBack]);
 }
