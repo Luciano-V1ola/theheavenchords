@@ -263,6 +263,11 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
               </SelectContent>
             </Select>
           </div>
+          <div className="flex items-center gap-1" title="Tamaño de letra">
+            <Button size="icon" variant="outline" onClick={decFont} aria-label="Reducir tamaño"><AArrowDown className="w-4 h-4" /></Button>
+            <span className="text-xs w-8 text-center tabular-nums">{fontSize}</span>
+            <Button size="icon" variant="outline" onClick={incFont} aria-label="Aumentar tamaño"><AArrowUp className="w-4 h-4" /></Button>
+          </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button size="sm" variant="outline" onClick={() => setScrolling(s => !s)}>
