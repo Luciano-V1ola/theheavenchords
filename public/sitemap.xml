@@ -42,12 +42,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/santo-por-siempre</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://theheavenchords.xyz/cancion/cristo-la-pena-de-horeb</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -102,6 +96,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/lindo-lindo-solo-quiero-verte-a-ti-nuestro-amado</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/el-nos-ama</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -110,6 +110,12 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/tu-eres-todo</loc>
     <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/santo-por-siempre</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -283,12 +289,6 @@
   </url>
   <url>
     <loc>https://theheavenchords.xyz/cancion/yo-te-busco</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://theheavenchords.xyz/cancion/lindo-lindo-solo-quiero-verte-a-ti-nuestro-amado</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
