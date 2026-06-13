@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush, Maximize2, X } from "lucide-react";
+import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush, Maximize2, X, AArrowDown, AArrowUp } from "lucide-react";
 import ShareMenu from "./ShareMenu";
 import { toast } from "sonner";
 import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
@@ -50,6 +50,14 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
   const [musicianMode, setMusicianMode] = useState(false);
+  const [fontSize, setFontSize] = useState<number>(() => {
+    if (typeof window === "undefined") return 16;
+    const saved = parseInt(localStorage.getItem("song-font-size") || "", 10);
+    return Number.isFinite(saved) && saved >= 10 && saved <= 40 ? saved : 16;
+  });
+  useEffect(() => { try { localStorage.setItem("song-font-size", String(fontSize)); } catch {} }, [fontSize]);
+  const decFont = () => setFontSize(s => Math.max(10, s - 1));
+  const incFont = () => setFontSize(s => Math.min(40, s + 1));
   const scrollRef = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
@@ -109,7 +117,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
 
   const sheet = (
     <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
-      <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
+      <pre className={`font-song leading-relaxed whitespace-pre`} style={{ fontSize: `${fontSize}px` }}>
         {lines.map((l, i) => {
           if (l.type === "skip") return null;
           if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
@@ -145,6 +153,8 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
             <Button size="icon" variant="outline" onClick={() => transpose(-1)} title="Bajar tono"><Minus className="w-4 h-4" /></Button>
             <span className="text-sm w-10 text-center">{currentKey}</span>
             <Button size="icon" variant="outline" onClick={() => transpose(1)} title="Subir tono"><Plus className="w-4 h-4" /></Button>
+            <Button size="icon" variant="outline" onClick={decFont} title="Reducir tamaño"><AArrowDown className="w-4 h-4" /></Button>
+            <Button size="icon" variant="outline" onClick={incFont} title="Aumentar tamaño"><AArrowUp className="w-4 h-4" /></Button>
             <Button size="icon" variant="outline" onClick={() => setScrolling(s => !s)} title="Auto-scroll">
               {scrolling ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
@@ -254,6 +264,11 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
                 <SelectItem value="lyrics">Solo Letra</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex items-center gap-1" title="Tamaño de letra">
+            <Button size="icon" variant="outline" onClick={decFont} aria-label="Reducir tamaño"><AArrowDown className="w-4 h-4" /></Button>
+            <span className="text-xs w-8 text-center tabular-nums">{fontSize}</span>
+            <Button size="icon" variant="outline" onClick={incFont} aria-label="Aumentar tamaño"><AArrowUp className="w-4 h-4" /></Button>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
