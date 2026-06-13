@@ -117,7 +117,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
 
   const sheet = (
     <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
-      <pre className={`${fontClass} text-base sm:text-lg leading-relaxed whitespace-pre`}>
+      <pre className={`font-song leading-relaxed whitespace-pre`} style={{ fontSize: `${fontSize}px` }}>
         {lines.map((l, i) => {
           if (l.type === "skip") return null;
           if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
