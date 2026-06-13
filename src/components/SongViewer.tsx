@@ -77,6 +77,13 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
     return () => window.removeEventListener("keydown", onKey);
   }, [musicianMode]);
 
+  // Atrás (Android/browser) sale del Modo Músico en lugar de cerrar la app.
+  const exitMusicianMode = useCallback(() => setMusicianMode(false), []);
+  useHistoryBack(musicianMode, exitMusicianMode);
+
+  // Mantener la pantalla encendida durante el Modo Músico (Wake Lock).
+  useWakeLock(musicianMode);
+
   useEffect(() => {
     if (!scrolling) {
       if (scrollRef.current) { window.clearInterval(scrollRef.current); scrollRef.current = null; }
