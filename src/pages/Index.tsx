@@ -86,6 +86,8 @@ export default function Index() {
   useEffect(() => {
     if (!routeSlug) {
       setSlugNotFound(false);
+      // Si volvimos a "/" (por ej. con la flecha Atrás), cerrar el visor.
+      if (viewingGlobal) setViewingGlobal(null);
       return;
     }
     // Ya cargado el correcto
