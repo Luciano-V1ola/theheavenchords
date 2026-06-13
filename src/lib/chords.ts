@@ -219,21 +219,13 @@ export function isChord(word: string): boolean {
 }
 
 // Línea de solo acordes (todas sus palabras son acordes O grados romanos).
-// Requiere al menos un token "fuerte" (con sufijo o más de una letra) cuando hay
-// una sola palabra, para evitar que líneas de una sola letra ("A", "E") que en
-// realidad son letra de canción sean tratadas como acordes.
+// Como las palabras de letra normal (ej. "A veces", "Intro", "Puente") tienen
+// más de una palabra o no son notas válidas, basta con exigir que TODAS las
+// palabras de la línea sean acordes/grados válidos.
 export function isChordLine(line: string): boolean {
   const words = line.trim().split(/\s+/).filter(Boolean);
   if (!words.length) return false;
-  const allValid = words.every(w => isChord(w) || ROMAN_RE.test(w));
-  if (!allValid) return false;
-  // Si es una sola palabra y es solo una nota natural sin sufijo (A, B, C…),
-  // probablemente es letra. Pedimos al menos 2 caracteres o algún símbolo.
-  if (words.length === 1) {
-    const w = words[0];
-    if (/^[A-G]$/.test(w)) return false;
-  }
-  return true;
+  return words.every(w => isChord(w) || ROMAN_RE.test(w));
 }
 
 // ¿La línea está escrita en grados? (al menos un token romano y ninguno claramente de letra de acorde extraña)
