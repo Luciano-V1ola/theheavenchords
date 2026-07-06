@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Eye, Trash2 } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { GlobalSong } from "./GlobalCatalog";
 import type { SongFont } from "./SongFormFields";
@@ -71,13 +71,18 @@ export default function FavoritesView({ onView }: Props) {
           Aún no marcaste favoritos. Tocá la ⭐ en cualquier canción del catálogo.
         </Card>
       ) : songs.map(s => (
-        <Card key={s.id} className="p-4 flex items-center gap-3 flex-wrap">
+        <Card
+          key={s.id}
+          onClick={() => onView(s)}
+          className="p-4 flex items-center gap-3 flex-wrap cursor-pointer transition-colors hover:bg-accent/50 active:scale-[0.99]"
+        >
           <div className="flex-1 min-w-[180px]">
             <h4 className="font-semibold">{s.title}</h4>
             <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => onView(s)}><Eye className="w-4 h-4 mr-1" /> Ver</Button>
-          <Button size="sm" variant="destructive" onClick={() => remove(s.id)}><Trash2 className="w-4 h-4" /></Button>
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <Button size="sm" variant="destructive" onClick={() => remove(s.id)}><Trash2 className="w-4 h-4" /></Button>
+          </div>
         </Card>
       ))}
     </div>

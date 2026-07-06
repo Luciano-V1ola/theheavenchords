@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Search, Eye, ListPlus, Clock, X, Pencil, Trash2, Star } from "lucide-react";
+import { Plus, Search, ListPlus, Clock, X, Pencil, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -249,7 +249,11 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
             Aún no hay canciones aprobadas.
           </Card>
         ) : approved.map(s => (
-          <Card key={s.id} className="p-4">
+          <Card
+            key={s.id}
+            onClick={() => onView(s)}
+            className="p-4 cursor-pointer transition-colors hover:bg-accent/50 active:scale-[0.99]"
+          >
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-1 min-w-[180px]">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -258,7 +262,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
                 </div>
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                 {user && (
                   <Button
                     size="sm"
@@ -269,9 +273,6 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
                     <Star className={`w-4 h-4 ${isFavorite(s.id) ? "text-yellow-500 fill-yellow-500" : ""}`} />
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => onView(s)}>
-                  <Eye className="w-4 h-4 mr-1" /> Ver
-                </Button>
                 {user && isAdminOfChurch && (
                   <Button size="sm" onClick={() => onAddToSetlist(s)}>
                     <ListPlus className="w-4 h-4 mr-1" /> A lista

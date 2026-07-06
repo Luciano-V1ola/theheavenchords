@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,6 +102,38 @@ export default function Auth() {
           </div>
         )}
 
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={async () => {
+              try {
+                const result = await lovable.auth.signInWithOAuth("google", {
+                  redirect_uri: window.location.origin,
+                });
+                if (result.error) { toast.error("No se pudo iniciar con Google"); return; }
+                if (result.redirected) return;
+                if (inviteToken) {
+                  const { error } = await supabase.rpc("accept_invitation", { _token: inviteToken });
+                  if (error) toast.error("No se pudo aceptar la invitación: " + error.message);
+                  else toast.success("¡Te uniste a la iglesia!");
+                }
+                navigate("/");
+              } catch (e: any) {
+                toast.error(e?.message ?? "Error");
+              }
+            }}
+          >
+            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.8 3.4 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z"/>
+            </svg>
+            {mode === "signup" ? "Crear cuenta con Google" : "Continuar con Google"}
+          </Button>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="h-px bg-border flex-1" /> o con email <div className="h-px bg-border flex-1" />
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (

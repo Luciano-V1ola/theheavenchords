@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Eye, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import SongViewer from "./SongViewer";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
@@ -147,7 +147,11 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
       ) : items.length === 0 ? (
         <Card className="p-8 text-center text-muted-foreground">Lista vacía. Sumá canciones desde el catálogo.</Card>
       ) : items.map(it => (
-        <Card key={it.id} className="p-4 flex items-center gap-3 flex-wrap">
+        <Card
+          key={it.id}
+          onClick={() => setViewing(it)}
+          className="p-4 flex items-center gap-3 flex-wrap cursor-pointer transition-colors hover:bg-accent/50 active:scale-[0.99]"
+        >
           <div className="flex-1 min-w-[180px]">
             <h4 className="font-semibold">{it.title}</h4>
             <p className="text-sm text-muted-foreground">
@@ -155,8 +159,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
               {it.drawing?.strokes?.length ? <span className="ml-2 text-primary">· con dibujo</span> : null}
             </p>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button size="sm" variant="outline" onClick={() => setViewing(it)}><Eye className="w-4 h-4 mr-1" /> Ver</Button>
+          <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
             {isAdmin && (
               <>
                 <Button size="sm" variant="outline" onClick={() => startEdit(it)}><Pencil className="w-4 h-4" /></Button>

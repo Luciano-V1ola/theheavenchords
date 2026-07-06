@@ -45,6 +45,42 @@ function extractFont(lyrics: string): { font: SongFont | null; clean: string } {
   return { font: m[1].toLowerCase() as SongFont, clean: lyrics.slice(m[0].length) };
 }
 
+// Empareja una línea de acordes con la letra siguiente para que cada acorde
+// aparezca exactamente encima de su sílaba, sin depender de fuente monoespaciada.
+function ChordLyricPair({ chord, lyric }: { chord: string; lyric: string }) {
+  const positions: { start: number; text: string }[] = [];
+  const re = /\S+/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(chord)) !== null) positions.push({ start: m.index, text: m[0] });
+  if (!positions.length) {
+    return (
+      <>
+        <div className="chord-line whitespace-pre">{chord || "\u00A0"}</div>
+        <div className="whitespace-pre">{lyric || "\u00A0"}</div>
+      </>
+    );
+  }
+  const segments: { chord: string; lyric: string }[] = [];
+  if (positions[0].start > 0) segments.push({ chord: "", lyric: lyric.slice(0, positions[0].start) });
+  for (let i = 0; i < positions.length; i++) {
+    const start = positions[i].start;
+    const end = i + 1 < positions.length ? positions[i + 1].start : Math.max(lyric.length, chord.length);
+    segments.push({ chord: positions[i].text, lyric: lyric.slice(start, end) });
+  }
+  return (
+    <div className="flex flex-nowrap items-end">
+      {segments.map((s, i) => (
+        <div key={i} className="flex flex-col shrink-0" style={{ whiteSpace: "pre" }}>
+          <span className="chord-line" style={{ paddingRight: s.chord ? "0.5em" : 0 }}>
+            {s.chord || "\u00A0"}
+          </span>
+          <span>{s.lyric.length ? s.lyric : "\u00A0"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, drawing, canDraw, onSaveDrawing, onChangeKey, shareUrl }: Props) {
   const [currentKey, setCurrentKey] = useState(song.song_key);
   const [displayMode, setDisplayMode] = useState<"chords" | "degrees" | "lyrics">("chords");
@@ -124,17 +160,32 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
   const hasSiblings = !!(siblings && siblings.length > 1 && onSelect);
 
+  // Renderiza líneas emparejando acorde+letra para que el acorde quede
+  // arriba de su sílaba sin depender de fuente monospace.
+  const rendered: JSX.Element[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (l.type === "skip") continue;
+    if (l.type === "title") { rendered.push(<div key={i} className="title-line">{l.text}</div>); continue; }
+    if (l.type === "section") { rendered.push(<div key={i} className="section-line">{l.text}</div>); continue; }
+    if (l.type === "chord") {
+      const nxt = lines[i + 1];
+      if (nxt && nxt.type === "text" && nxt.text.trim() !== "") {
+        rendered.push(<ChordLyricPair key={i} chord={l.text} lyric={nxt.text} />);
+        i++;
+        continue;
+      }
+      rendered.push(<div key={i} className="chord-line whitespace-pre">{l.text || "\u00A0"}</div>);
+      continue;
+    }
+    rendered.push(<div key={i} className="whitespace-pre">{l.text || "\u00A0"}</div>);
+  }
+
   const sheet = (
     <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
-      <pre className={`font-song leading-relaxed whitespace-pre`} style={{ fontSize: `${fontSize}px` }}>
-        {lines.map((l, i) => {
-          if (l.type === "skip") return null;
-          if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
-          if (l.type === "chord") return <div key={i} className="chord-line">{l.text || "\u00A0"}</div>;
-          if (l.type === "section") return <div key={i} className="section-line">{l.text}</div>;
-          return <div key={i}>{l.text || "\u00A0"}</div>;
-        })}
-      </pre>
+      <div className={`${fontClass} leading-relaxed`} style={{ fontSize: `${fontSize}px` }}>
+        {rendered}
+      </div>
       {canDraw && !musicianMode && (
         <SongOverlayCanvas
           containerRef={sheetRef}
