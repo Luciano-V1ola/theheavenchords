@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Eye, Trash2 } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { GlobalSong } from "./GlobalCatalog";
 import type { SongFont } from "./SongFormFields";
