@@ -262,16 +262,17 @@ export function transposeChordLine(line: string, semitones: number, currentKey =
 const SECTION_KEYWORDS = [
   "coro", "chorus",
   "estrofa", "verso", "verse", "vers[ií]culo",
-  "pre[\\s\\-]?coro", "pre[\\s\\-]?chorus", "pr[eé][\\s\\-]?refr[aã]o",
+  "pre[\\s\\-]?coro", "pre[\\s\\-]?chorus", "pr[eé][\\s\\-]?refr[aã]o", "precoro",
   "estribillo", "refr[aáã]n", "refr[aã]o", "refrain",
-  "puente", "bridge", "ponte",
+  "puente", "bridge", "ponte", "puenteo", "punteo",
   "intro", "introduccion", "introducci[oó]n",
   "outro", "ending",
   "final", "fin",
   "interludio", "interlude", "interl[uú]dio",
   "instrumental",
-  "punteo", "solo", "guitarra", "lead", "riff",
+  "solo", "guitarra", "lead", "riff",
   "tag",
+  "coda",
 ];
 const SECTION_RE = new RegExp(
   `^\\s*(?:${SECTION_KEYWORDS.join("|")})\\s*\\d*\\s*:?\\s*$`,
