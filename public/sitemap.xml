@@ -90,6 +90,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/fuego-al-rey</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/toma-tu-lugar</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -102,6 +108,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/que-vio-david</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/yo-soy-el-que-soy</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -110,6 +122,12 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/yo-te-amo-2</loc>
     <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/tu-presencia-es-el-cielo</loc>
+    <lastmod>2026-07-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -140,6 +158,12 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/santo-por-siempre</loc>
     <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/nuestra-victoria</loc>
+    <lastmod>2026-07-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -180,14 +204,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/gracias-dios</loc>
-    <lastmod>2026-06-09</lastmod>
+    <loc>https://theheavenchords.xyz/cancion/te-entrego</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/te-entrego</loc>
-    <lastmod>2026-06-19</lastmod>
+    <loc>https://theheavenchords.xyz/cancion/gracias-dios</loc>
+    <lastmod>2026-07-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -289,12 +313,6 @@
   </url>
   <url>
     <loc>https://theheavenchords.xyz/cancion/digno-es-el-senor</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://theheavenchords.xyz/cancion/yo-te-amo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
