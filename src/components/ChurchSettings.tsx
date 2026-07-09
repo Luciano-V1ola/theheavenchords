@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import type { Membership } from "@/hooks/useChurch";
 import { SITE_URL } from "@/lib/site";
 import ShareMenu from "./ShareMenu";
+import { friendlyError } from "@/lib/errors";
 
 type Member = { id: string; user_id: string; role: "admin" | "member"; display_name?: string | null };
 type Invitation = { id: string; email: string; role: "admin" | "member"; token: string; accepted_at: string | null };
@@ -84,7 +85,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
       .insert({ church_id: church.id, email: email.trim().toLowerCase(), role, invited_by: user.id })
       .select("token").single();
     setSending(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyError(error)); return; }
     const link = `${SITE_URL}/auth?invite=${data.token}`;
     await navigator.clipboard.writeText(link).catch(() => {});
     toast.success("Invitación creada. Enviá el enlace desde la lista.");
@@ -100,17 +101,17 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
   const cancelInv = async (id: string) => {
     if (!isChurchAdmin) return;
     const { error } = await supabase.from("invitations").delete().eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Cancelada"); load(); }
+    if (error) toast.error(friendlyError(error)); else { toast.success("Cancelada"); load(); }
   };
   const removeMember = async (id: string) => {
     if (!isChurchAdmin) { toast.error("Solo los administradores pueden expulsar"); return; }
     const { error } = await supabase.from("church_members").delete().eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Eliminado"); load(); }
+    if (error) toast.error(friendlyError(error)); else { toast.success("Eliminado"); load(); }
   };
   const changeRole = async (id: string, newRole: "admin" | "member") => {
     if (!isChurchAdmin) { toast.error("Solo los administradores pueden cambiar roles"); return; }
     const { error } = await supabase.from("church_members").update({ role: newRole }).eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Rol actualizado"); load(); }
+    if (error) toast.error(friendlyError(error)); else { toast.success("Rol actualizado"); load(); }
   };
 
   const isCreatorOfCurrent = createdChurchId === church.id;
@@ -119,7 +120,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
     if (!user) return;
     const { error } = await supabase.from("church_members")
       .delete().eq("church_id", church.id).eq("user_id", user.id);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Saliste de la iglesia");
     await refreshChurches();
     onBack();
@@ -127,7 +128,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
 
   const deleteMyChurch = async () => {
     const { error } = await supabase.from("churches").delete().eq("id", church.id);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Iglesia eliminada");
     await refreshChurches();
     onBack();
@@ -141,11 +142,11 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
       "resolve_user_id_by_email" as any,
       { _email: email }
     );
-    if (rpcErr) return toast.error(rpcErr.message);
+    if (rpcErr) return toast.error(friendlyError(rpcErr));
     if (!targetId) { toast.error("No encontramos un usuario registrado con ese email."); return; }
     const { error } = await supabase.from("user_global_roles")
       .upsert({ user_id: targetId as string, role: "moderator" }, { onConflict: "user_id" });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Moderador asignado");
     setModEmail(""); load();
   };
@@ -153,7 +154,7 @@ export default function ChurchSettings({ church, onBack }: { church: Membership;
   const demoteModerator = async (uid: string) => {
     const { error } = await supabase.from("user_global_roles")
       .update({ role: "user" }).eq("user_id", uid);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Moderador removido"); load();
   };
 

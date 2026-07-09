@@ -11,6 +11,7 @@ import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import type { Drawing } from "./DrawingCanvas";
 import type { Setlist } from "./SetlistsView";
 import type { Membership } from "@/hooks/useChurch";
+import { friendlyError } from "@/lib/errors";
 
 type Item = {
   id: string; setlist_id: string; position: number;
@@ -50,7 +51,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
       .eq("setlist_id", setlist.id)
       .order("position", { ascending: true })
       .order("created_at", { ascending: true });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else setItems((data ?? []).map((it: any) => {
       const { font, clean } = unpackLyrics(it.lyrics);
       return { ...it, font, lyrics: clean, drawing: it.drawing ?? null, bpm: it.bpm ?? null, time_signature: it.time_signature ?? null };
@@ -62,7 +63,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
 
   const remove = async (id: string) => {
     const { error } = await supabase.from("setlist_songs").delete().eq("id", id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Quitada de la lista"); load(); }
   };
 
@@ -81,7 +82,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
       bpm: draft.bpm ?? null,
       time_signature: draft.time_signature ?? null,
     } as any).eq("id", editing.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
 
@@ -90,14 +91,14 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
       _id: id,
       _drawing: d as any,
     });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Dibujo guardado"); load(); }
   };
 
   // Persiste el cambio de tono en la lista (solo afecta a esta iglesia)
   const saveKey = async (id: string, newKey: string) => {
     const { error } = await supabase.from("setlist_songs").update({ song_key: newKey } as any).eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyError(error)); return; }
     setItems(prev => prev.map(it => it.id === id ? { ...it, song_key: newKey } : it));
   };
 

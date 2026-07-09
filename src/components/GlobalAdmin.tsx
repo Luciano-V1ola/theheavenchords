@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Shield, ShieldOff, Crown } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 // Panel Global: gestión de moderadores de la app. Visible solo para el Dueño.
 // Está separado de Iglesia para que la moderación global no se mezcle con la
@@ -53,7 +54,7 @@ export default function GlobalAdmin() {
       "resolve_user_id_by_email" as any,
       { _email: email }
     );
-    if (rpcErr) return toast.error(rpcErr.message);
+    if (rpcErr) return toast.error(friendlyError(rpcErr));
     if (!targetId) {
       toast.error("No encontramos un usuario registrado con ese email.");
       return;
@@ -61,7 +62,7 @@ export default function GlobalAdmin() {
     const { error } = await supabase
       .from("user_global_roles")
       .upsert({ user_id: targetId as string, role: "moderator" }, { onConflict: "user_id" });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Moderador asignado");
     setModEmail("");
     load();
@@ -72,7 +73,7 @@ export default function GlobalAdmin() {
       .from("user_global_roles")
       .update({ role: "user" })
       .eq("user_id", uid);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Moderador removido");
     load();
   };

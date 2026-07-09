@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 // Hook simple para gestionar la lista de canciones favoritas del usuario actual.
 // Mantiene un Set con los IDs y expone toggle/isFavorite.
@@ -35,12 +36,12 @@ export function useFavorites() {
     if (isFav) {
       const { error } = await supabase.from("user_favorites").delete()
         .eq("user_id", user.id).eq("global_song_id", songId);
-      if (error) { toast.error(error.message); refresh(); }
+      if (error) { toast.error(friendlyError(error)); refresh(); }
       else toast.success("Quitada de favoritos");
     } else {
       const { error } = await supabase.from("user_favorites")
         .insert({ user_id: user.id, global_song_id: songId } as any);
-      if (error) { toast.error(error.message); refresh(); }
+      if (error) { toast.error(friendlyError(error)); refresh(); }
       else toast.success("⭐ Agregada a favoritos");
     }
   }, [ids, user?.id, refresh]);

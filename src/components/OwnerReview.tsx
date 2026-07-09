@@ -13,6 +13,7 @@ import { Check, X, Eye, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import SongViewer from "./SongViewer";
+import { friendlyError } from "@/lib/errors";
 
 type Item = {
   id: string; title: string; artist: string | null; song_key: string; lyrics: string;
@@ -54,7 +55,7 @@ export default function OwnerReview() {
       .select("id, title, artist, song_key, lyrics, status, proposed_by, created_at, hidden, pending_changes, bpm, time_signature")
       .or("status.eq.pending,hidden.eq.true")
       .order("created_at", { ascending: true });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else setItems(((data ?? []) as Item[]).map(p => {
       const { font, clean } = unpackLyrics(p.lyrics);
       return { ...p, font, lyrics: clean };
@@ -69,7 +70,7 @@ export default function OwnerReview() {
       .from("global_songs")
       .update({ status: "approved", reviewed_by: user!.id, reviewed_at: new Date().toISOString(), reject_reason: null })
       .eq("id", s.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Aprobada"); load(); }
   };
 
@@ -82,7 +83,7 @@ export default function OwnerReview() {
         reject_reason: rejectReason.trim() || null,
       })
       .eq("id", rejectFor.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Rechazada"); setRejectFor(null); setRejectReason(""); load(); }
   };
 
@@ -90,13 +91,13 @@ export default function OwnerReview() {
     const { error } = await supabase.from("global_songs")
       .update({ hidden: false, pending_changes: null })
       .eq("id", s.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Restaurada al catálogo"); load(); }
   };
 
   const deleteForever = async (s: Item) => {
     const { error } = await supabase.from("global_songs").delete().eq("id", s.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Eliminada definitivamente"); load(); }
   };
 
@@ -115,7 +116,7 @@ export default function OwnerReview() {
       bpm: draft.bpm ?? null,
       time_signature: draft.time_signature ?? null,
     } as any).eq("id", editing.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Guardado"); setEditing(null); load(); }
   };
 

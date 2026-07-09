@@ -30,6 +30,7 @@ import AddToSetlistDialog from "@/components/AddToSetlistDialog";
 import ProfileDialog from "@/components/ProfileDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import ThemeChoiceDialog from "@/components/ThemeChoiceDialog";
+import { friendlyError } from "@/lib/errors";
 
 type Tab = "catalog" | "favorites" | "lists" | "review" | "settings" | "global";
 type CatalogViewerSong = GlobalSong & { source: "catalog" };
@@ -218,7 +219,7 @@ export default function Index() {
     if (error) {
       if (error.message.includes("churches_one_per_creator")) {
         toast.error("Ya creaste una iglesia. Eliminala antes de crear otra.");
-      } else toast.error(error.message);
+      } else toast.error(friendlyError(error));
       return;
     }
     toast.success("Iglesia creada");
