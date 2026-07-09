@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Eye, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import type { Membership } from "@/hooks/useChurch";
+import { friendlyError } from "@/lib/errors";
 
 export type Setlist = { id: string; name: string; church_id: string };
 
@@ -35,7 +36,7 @@ export default function SetlistsView({ church, onOpen, refreshSignal }: Props) {
       .select("id, name, church_id")
       .eq("church_id", church.id)
       .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else setLists(data ?? []);
     setLoading(false);
   };
@@ -47,20 +48,20 @@ export default function SetlistsView({ church, onOpen, refreshSignal }: Props) {
     const { error } = await supabase.from("setlists").insert({
       name: name.trim(), church_id: church.id, created_by: user.id,
     });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Lista creada"); setName(""); setOpen(false); load(); }
   };
 
   const rename = async () => {
     if (!editing || !name.trim()) return;
     const { error } = await supabase.from("setlists").update({ name: name.trim() }).eq("id", editing.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Renombrada"); setEditing(null); setName(""); load(); }
   };
 
   const remove = async (id: string) => {
     const { error } = await supabase.from("setlists").delete().eq("id", id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Eliminada"); load(); }
   };
 

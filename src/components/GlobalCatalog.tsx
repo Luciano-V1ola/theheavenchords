@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Membership } from "@/hooks/useChurch";
+import { friendlyError } from "@/lib/errors";
 
 // Canción del catálogo global
 export type GlobalSong = {
@@ -77,7 +78,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       .from("global_songs")
       .select("id, title, artist, song_key, lyrics, status, proposed_by, hidden, bpm, time_signature, slug")
       .order("title");
-    if (error) { toast.error(error.message); setLoading(false); return; }
+    if (error) { toast.error(friendlyError(error)); setLoading(false); return; }
 
     const rows = (data ?? []).map(r => {
       const { font, clean } = unpackLyrics((r as any).lyrics);
@@ -115,7 +116,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       time_signature: draft.time_signature ?? null,
     } as any);
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Propuesta enviada para revisión");
     setDraft(emptyDraft);
     localStorage.removeItem(DRAFT_KEY);
@@ -125,7 +126,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
 
   const cancelProposal = async (id: string) => {
     const { error } = await supabase.from("global_songs").delete().eq("id", id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Propuesta cancelada"); load(); }
   };
 
@@ -151,7 +152,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
       patch.pending_changes = "Editada por moderador";
     }
     const { error } = await supabase.from("global_songs").update(patch).eq("id", editing.id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else {
       toast.success(isModerator && !isOwner ? "Cambios enviados a Revisión" : "Cambios guardados");
       setEditing(null); load();
@@ -165,13 +166,13 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
     if (!deleting) return;
     if (isOwner) {
       const { error } = await supabase.from("global_songs").delete().eq("id", deleting.id);
-      if (error) return toast.error(error.message);
+      if (error) return toast.error(friendlyError(error));
       toast.success("Canción eliminada definitivamente");
     } else if (isModerator) {
       const { error } = await supabase.from("global_songs")
         .update({ hidden: true, pending_changes: "Eliminada por moderador" })
         .eq("id", deleting.id);
-      if (error) return toast.error(error.message);
+      if (error) return toast.error(friendlyError(error));
       toast.success("Enviada a Revisión");
     }
     setDeleting(null); load();

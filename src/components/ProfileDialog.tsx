@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { User, LogOut, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 // Permite a cada usuario editar nombre, email, contraseña y cerrar sesión
 export default function ProfileDialog() {
@@ -41,7 +42,7 @@ export default function ProfileDialog() {
     const { error } = await supabase.from("profiles")
       .upsert({ user_id: user.id, display_name: name.trim() || null }, { onConflict: "user_id" });
     setSavingName(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else toast.success("Nombre guardado");
   };
 
@@ -50,7 +51,7 @@ export default function ProfileDialog() {
     setSavingEmail(true);
     const { error } = await supabase.auth.updateUser({ email: email.trim() });
     setSavingEmail(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else toast.success("Te enviamos un email para confirmar el cambio");
   };
 
@@ -71,7 +72,7 @@ export default function ProfileDialog() {
     }
     const { error } = await supabase.auth.updateUser({ password });
     setSavingPwd(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else {
       toast.success("Contraseña actualizada");
       setCurrentPassword(""); setPassword(""); setPassword2("");

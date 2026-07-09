@@ -7,6 +7,7 @@ import { Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { GlobalSong } from "./GlobalCatalog";
 import type { SongFont } from "./SongFormFields";
+import { friendlyError } from "@/lib/errors";
 
 type Props = {
   onView: (s: GlobalSong) => void;
@@ -31,7 +32,7 @@ export default function FavoritesView({ onView }: Props) {
       .select("global_song_id, global_songs(id, title, artist, song_key, lyrics, status, proposed_by, hidden, bpm, time_signature, slug)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-    if (error) { toast.error(error.message); setLoading(false); return; }
+    if (error) { toast.error(friendlyError(error)); setLoading(false); return; }
     const rows = (data ?? [])
       .map((r: any) => r.global_songs)
       .filter(Boolean)
@@ -49,7 +50,7 @@ export default function FavoritesView({ onView }: Props) {
     if (!user) return;
     const { error } = await supabase.from("user_favorites").delete()
       .eq("user_id", user.id).eq("global_song_id", id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Quitada de favoritos"); load(); }
   };
 

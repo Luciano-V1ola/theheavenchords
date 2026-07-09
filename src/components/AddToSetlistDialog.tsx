@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import type { GlobalSong } from "./GlobalCatalog";
 import type { Membership } from "@/hooks/useChurch";
+import { friendlyError } from "@/lib/errors";
 
 type Props = {
   church: Membership;
@@ -26,7 +27,7 @@ export default function AddToSetlistDialog({ church, song, onClose }: Props) {
     if (!song) return;
     supabase.from("setlists").select("id, name").eq("church_id", church.id).order("created_at", { ascending: false })
       .then(({ data, error }) => {
-        if (error) toast.error(error.message);
+        if (error) toast.error(friendlyError(error));
         else { setLists(data ?? []); setSelected(data?.[0]?.id ?? ""); }
       });
   }, [song, church.id]);
@@ -49,7 +50,7 @@ export default function AddToSetlistDialog({ church, song, onClose }: Props) {
       time_signature: song.time_signature ?? null,
     } as any);
     setSaving(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Agregada a la lista"); onClose(); }
   };
 
