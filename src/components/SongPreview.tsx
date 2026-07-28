@@ -21,9 +21,11 @@ type Props = {
 export default function SongPreview({ title, artist, song_key, lyrics, chordsLyrics, degreesLyrics, font, bpm, time_signature }: Props) {
   const fontClass = (font ?? "arial") === "calibri" ? "font-calibri" : "font-arial";
   const [displayMode, setDisplayMode] = useState<"chords" | "degrees" | "lyrics">("chords");
-  const sourceLyrics = displayMode === "degrees"
-    ? (degreesLyrics ?? lyrics)
-    : (chordsLyrics ?? lyrics);
+  // Siempre usar la letra que se está editando en vivo. El renderer se encarga
+  // de convertir acordes ↔ grados según `displayMode`, así cualquier cambio en
+  // el textarea se refleja inmediatamente sin depender de buffers cacheados.
+  void chordsLyrics; void degreesLyrics;
+  const sourceLyrics = lyrics;
 
   return (
     <Card className="p-3 sm:p-4 overflow-x-auto">
@@ -60,3 +62,4 @@ export default function SongPreview({ title, artist, song_key, lyrics, chordsLyr
     </Card>
   );
 }
+
