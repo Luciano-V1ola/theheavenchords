@@ -6,12 +6,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ArrowLeft, Pencil, Copy, Play, Pause, Minus, Plus, ChevronLeft, ChevronRight, List, Brush, Maximize2, X, AArrowDown, AArrowUp } from "lucide-react";
 import ShareMenu from "./ShareMenu";
 import { toast } from "sonner";
-import { KEY_OPTIONS, noteIndex, renderLines, transposeChordLine, isChordLine } from "@/lib/chords";
+import { KEY_OPTIONS, noteIndex, transposeChordLine, isChordLine } from "@/lib/chords";
 import { SongFont } from "./SongFormFields";
 import SongOverlayCanvas from "./SongOverlayCanvas";
+import SongRenderer from "./SongRenderer";
 import type { Drawing } from "./DrawingCanvas";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { useHistoryBack } from "@/hooks/useHistoryBack";
+
 
 export type ViewerSong = {
   id?: string;
