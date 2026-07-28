@@ -102,7 +102,6 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   }, [scrolling]);
 
   const semitones = noteIndex(currentKey) - noteIndex(song.song_key);
-  const lines = renderLines(clean, semitones, currentKey, displayMode, song.song_key);
 
   const changeKey = (k: string) => {
     setCurrentKey(k);
@@ -129,32 +128,17 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
   const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
   const hasSiblings = !!(siblings && siblings.length > 1 && onSelect);
 
-  // Renderiza líneas emparejando acorde+letra para que el acorde quede
-  // arriba de su sílaba sin depender de fuente monospace.
-  const rendered: JSX.Element[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    const l = lines[i];
-    if (l.type === "skip") continue;
-    if (l.type === "title") { rendered.push(<div key={i} className="title-line">{l.text}</div>); continue; }
-    if (l.type === "section") { rendered.push(<div key={i} className="section-line">{l.text}</div>); continue; }
-    if (l.type === "chord") {
-      const nxt = lines[i + 1];
-      if (nxt && nxt.type === "text" && nxt.text.trim() !== "") {
-        rendered.push(<ChordLyricPair key={i} chord={l.text} lyric={nxt.text} />);
-        i++;
-        continue;
-      }
-      rendered.push(<div key={i} className="chord-line whitespace-pre">{l.text || "\u00A0"}</div>);
-      continue;
-    }
-    rendered.push(<div key={i} className="whitespace-pre">{l.text || "\u00A0"}</div>);
-  }
-
   const sheet = (
     <Card className="p-4 sm:p-6 overflow-x-auto relative" ref={sheetRef}>
-      <div className={`${fontClass} leading-relaxed`} style={{ fontSize: `${fontSize}px` }}>
-        {rendered}
-      </div>
+      <SongRenderer
+        lyrics={clean}
+        song_key={song.song_key}
+        originalKey={song.song_key}
+        currentKey={currentKey}
+        displayMode={displayMode}
+        font={font}
+        fontSize={fontSize}
+      />
       {canDraw && !musicianMode && (
         <SongOverlayCanvas
           containerRef={sheetRef}
@@ -166,6 +150,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
       )}
     </Card>
   );
+
 
   // MODO MÚSICO: overlay fullscreen con interfaz mínima
   if (musicianMode) {
