@@ -196,7 +196,10 @@ export default function SongFormFields({ value, onChange, showPreview = true }: 
             chordsLyrics={chordsLyrics}
             degreesLyrics={degreesLyrics}
             font={value.font}
+            bpm={value.bpm ?? null}
+            time_signature={value.time_signature ?? null}
           />
+
         </div>
       )}
     </div>

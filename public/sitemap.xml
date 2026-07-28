@@ -12,6 +12,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/yo-quiero-mas-de-ti</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/vamos-a-cantar</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -60,6 +66,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/que-vio-david</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/cristo-la-pena-de-horeb</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -78,8 +90,14 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/lo-que-tu-gloria-hizo-conmigo</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/tengo-un-perfume</loc>
-    <lastmod>2026-06-29</lastmod>
+    <lastmod>2026-07-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -104,12 +122,6 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/al-rey</loc>
     <lastmod>2026-06-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://theheavenchords.xyz/cancion/que-vio-david</loc>
-    <lastmod>2026-07-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -234,12 +246,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/yo-quiero-mas-de-ti</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://theheavenchords.xyz/cancion/oh-la-gloria</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -336,12 +342,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/ven-descansa</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://theheavenchords.xyz/cancion/tumbas-a-jardines</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -360,6 +360,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/ven-descansa</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/cristo-sustenta</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -372,14 +378,20 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/el-poder-de-tu-amor</loc>
-    <lastmod>2026-06-15</lastmod>
+    <loc>https://theheavenchords.xyz/cancion/habra-alguno-digno-el-es</loc>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://theheavenchords.xyz/cancion/habra-alguno-digno-el-es</loc>
-    <lastmod>2026-06-18</lastmod>
+    <loc>https://theheavenchords.xyz/cancion/el-poder-de-tu-amor</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/generacion-que-danza</loc>
+    <lastmod>2026-07-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

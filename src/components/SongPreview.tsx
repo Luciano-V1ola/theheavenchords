@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { renderLines } from "@/lib/chords";
 import { SongFont } from "./SongFormFields";
+import SongRenderer from "./SongRenderer";
 
 // Vista previa en vivo de una canción tal como se verá publicada.
-// Permite alternar entre Acordes y Grados directamente desde el editor.
+// Utiliza el renderer unificado (SongRenderer) — misma salida en todos lados.
 type Props = {
   title: string;
   artist?: string;
@@ -14,49 +14,49 @@ type Props = {
   chordsLyrics?: string;
   degreesLyrics?: string;
   font?: SongFont;
+  bpm?: number | null;
+  time_signature?: string | null;
 };
 
-export default function SongPreview({ title, artist, song_key, lyrics, chordsLyrics, degreesLyrics, font }: Props) {
+export default function SongPreview({ title, artist, song_key, lyrics, chordsLyrics, degreesLyrics, font, bpm, time_signature }: Props) {
   const fontClass = (font ?? "arial") === "calibri" ? "font-calibri" : "font-arial";
-  const [displayMode, setDisplayMode] = useState<"chords" | "degrees">("chords");
-  // Sin transposición: previsualizamos en el tono original
-  const lines = useMemo(
-    () => {
-      const sourceLyrics = displayMode === "degrees"
-        ? (degreesLyrics ?? lyrics)
-        : (chordsLyrics ?? lyrics);
-      return renderLines(sourceLyrics, 0, song_key, displayMode, song_key);
-    },
-    [lyrics, song_key, displayMode, chordsLyrics, degreesLyrics],
-  );
+  const [displayMode, setDisplayMode] = useState<"chords" | "degrees" | "lyrics">("chords");
+  const sourceLyrics = displayMode === "degrees"
+    ? (degreesLyrics ?? lyrics)
+    : (chordsLyrics ?? lyrics);
 
   return (
     <Card className="p-3 sm:p-4 overflow-x-auto">
       <div className="mb-2 flex items-start justify-between gap-2 flex-wrap">
         <div className="min-w-0">
           <h3 className={`font-bold text-lg ${fontClass} truncate`}>{title || "Sin título"}</h3>
-          {artist && <p className="text-xs text-muted-foreground truncate">{artist} · Tono: {song_key}</p>}
+          {(artist || bpm || time_signature) && (
+            <p className="text-xs text-muted-foreground truncate">
+              {artist ? `${artist} · ` : ""}Tono: {song_key}
+              {bpm ? ` · BPM: ${bpm}` : ""}
+              {time_signature ? ` · Compás: ${time_signature}` : ""}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-muted-foreground">Ver:</span>
-          <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as "chords" | "degrees")}>
+          <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as "chords" | "degrees" | "lyrics")}>
             <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="chords">Acordes</SelectItem>
               <SelectItem value="degrees">Grados</SelectItem>
+              <SelectItem value="lyrics">Solo Letra</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
-      <pre className={`${fontClass} text-sm sm:text-base leading-relaxed whitespace-pre`}>
-        {lines.map((l, i) => {
-          if (l.type === "title") return <div key={i} className="title-line">{l.text}</div>;
-          if (l.type === "chord") return <div key={i} className="chord-line">{l.text || "\u00A0"}</div>;
-          if (l.type === "section") return <div key={i} className="section-line">{l.text}</div>;
-          return <div key={i}>{l.text || "\u00A0"}</div>;
-        })}
-        {!lyrics.trim() && <div className="text-muted-foreground italic">La preview aparecerá acá mientras escribís…</div>}
-      </pre>
+      <SongRenderer
+        lyrics={sourceLyrics}
+        song_key={song_key}
+        displayMode={displayMode}
+        font={font}
+        className="text-sm sm:text-base"
+      />
     </Card>
   );
 }
