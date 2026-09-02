@@ -7,8 +7,8 @@
 .font-calibri { font-family: Calibri, "Segoe UI", Candara, "Trebuchet MS", sans-serif; }
 .font-song { font-family: ui-monospace, SFMono-Regular, "Courier New", monospace; }
 
-/* Línea de acordes destacada con color primario */
-.chord-line { color: hsl(var(--primary)); font-weight: 700; }
+/* Línea de acordes destacada en azul (color reservado para acordes) */
+.chord-line { color: hsl(var(--chord)); font-weight: 700; }
 /* Etiquetas de sección (Coro, Estrofa, Coro 2, etc.) en negrita y subrayada */
 .section-line { font-weight: 800; text-decoration: underline; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.5rem; }
 /* Título principal de la canción (primera línea detectada) en negrita y subrayado */
