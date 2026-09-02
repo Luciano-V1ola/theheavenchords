@@ -72,6 +72,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/la-imagen-de-dios</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/cristo-la-pena-de-horeb</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -114,6 +120,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/el-celo-de-tu-casa</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/toma-tu-lugar</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -122,6 +134,24 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/al-rey</loc>
     <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/enamorame</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/eres-libre</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/digno</loc>
+    <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -138,8 +168,26 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/junto-a-sus-pies</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/tu-presencia-es-el-cielo</loc>
     <lastmod>2026-07-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/eres-digno-de-adorar</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/yo-me-rindo-a-el-si-te-tengo-a-ti</loc>
+    <lastmod>2026-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -152,6 +200,24 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/lindo-lindo-solo-quiero-verte-a-ti-nuestro-amado</loc>
     <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/santo-una-cosa</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/alabare</loc>
+    <lastmod>2026-08-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/tu-amor</loc>
+    <lastmod>2026-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -265,12 +331,6 @@
   </url>
   <url>
     <loc>https://theheavenchords.xyz/cancion/aqui-estoy</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://theheavenchords.xyz/cancion/digno</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
