@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, AudioLines } from "lucide-react";
 import { toast } from "sonner";
 import SongViewer from "./SongViewer";
+import ImprovSession, { IMPROV_ID, IMPROV_TITLE } from "./ImprovSession";
 import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import type { Drawing } from "./DrawingCanvas";
 import type { Setlist } from "./SetlistsView";
@@ -38,6 +39,8 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Item | null>(null);
+  // Improvisación: entrada especial de la lista (no es una canción guardada)
+  const [improvOpen, setImprovOpen] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
   // dibujo: ahora se hace dentro del visor (overlay sobre la partitura)
   const [draft, setDraft] = useState<SongFields>({ title: "", artist: "", song_key: "C", lyrics: "", font: "arial", bpm: null, time_signature: null });
@@ -102,9 +105,30 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
     setItems(prev => prev.map(it => it.id === id ? { ...it, song_key: newKey } : it));
   };
 
-  const siblings = useMemo(() => items.map(it => ({
-    id: it.id, source: "setlist" as const, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font, bpm: it.bpm, time_signature: it.time_signature,
-  })), [items]);
+  const siblings = useMemo(() => {
+    const base = items.map(it => ({
+      id: it.id, source: "setlist" as const, title: it.title, artist: it.artist, song_key: it.song_key, lyrics: it.lyrics, font: it.font, bpm: it.bpm, time_signature: it.time_signature,
+    }));
+    // La Improvisación siempre queda al final de la lista.
+    return [...base, { id: IMPROV_ID, source: "setlist" as const, title: IMPROV_TITLE, artist: null, song_key: "C", lyrics: "" }];
+  }, [items]);
+
+  const openSibling = (s: { id?: string; source?: string }) => {
+    if (s.id === IMPROV_ID) { setViewing(null); setImprovOpen(true); return; }
+    const found = items.find(it => it.id === s.id);
+    if (found) { setImprovOpen(false); setViewing(found); }
+  };
+
+  if (improvOpen) {
+    return (
+      <ImprovSession
+        scope={setlist.id}
+        siblings={siblings}
+        onSelect={openSibling}
+        onBack={() => setImprovOpen(false)}
+      />
+    );
+  }
 
   if (viewing) {
     return (
@@ -112,11 +136,7 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
         key={`setlist-${setlist.id}-${viewing.id}`}
         song={{ ...viewing, source: "setlist" }}
         siblings={siblings}
-        onSelect={(s) => {
-          if (s.source !== "setlist") return;
-          const found = items.find(it => it.id === s.id);
-          if (found) setViewing(found);
-        }}
+        onSelect={openSibling}
         onBack={() => setViewing(null)}
         onEdit={isAdmin ? () => { startEdit(viewing); setViewing(null); } : undefined}
         canDraw={true}
@@ -184,6 +204,20 @@ export default function SetlistDetail({ church, setlist, onBack }: Props) {
           </div>
         </Card>
       ))}
+
+      {/* Entrada especial: Improvisación (siempre al final, no se guarda) */}
+      <Card
+        onClick={() => setImprovOpen(true)}
+        className="p-4 flex items-center gap-3 cursor-pointer border-primary/40 bg-primary/5 transition-colors hover:bg-primary/10"
+      >
+        <span className="w-10 h-10 rounded-xl border border-primary/40 bg-primary/10 grid place-items-center shrink-0">
+          <AudioLines className="w-5 h-5 text-primary" />
+        </span>
+        <div className="min-w-0">
+          <h4 className="font-semibold text-primary">Improvisación</h4>
+          <p className="text-sm text-muted-foreground">Generá tu canción en vivo</p>
+        </div>
+      </Card>
 
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
