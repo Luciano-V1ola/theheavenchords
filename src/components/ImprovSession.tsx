@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Undo2, Redo2, Trash2, CornerDownLeft, Plus, X, AudioLines } from "lucide-react";
-import { KEY_OPTIONS, degreeToChord, chordToDegree } from "@/lib/chords";
+import { KEY_OPTIONS, degreeToChord, chordToDegree, transposeChord, noteIndex } from "@/lib/chords";
 import SongViewer, { ViewerSong } from "./SongViewer";
 
 // ===== Improvisación =====
@@ -152,6 +152,16 @@ export default function ImprovSession({ scope, siblings, onSelect, onBack }: Pro
 
   const clearAll = () => commit(emptyState(state.key));
 
+  // Cambiar la tonalidad transpone los acordes ya agregados (mismo sistema que las canciones)
+  const changeKey = (k: string) => {
+    const semis = noteIndex(k) - noteIndex(state.key);
+    const sections = state.sections.map(s => ({
+      ...s,
+      lines: s.lines.map(l => l.map(c => transposeChord(c, semis, k))),
+    }));
+    commit({ key: k, sections });
+  };
+
   const lyrics = useMemo(() => buildLyrics(state), [state]);
 
   const song: ViewerSong = {
@@ -216,7 +226,7 @@ export default function ImprovSession({ scope, siblings, onSelect, onBack }: Pro
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Tonalidad:</span>
-            <Select value={state.key} onValueChange={(k) => commit({ ...state, key: k })}>
+            <Select value={state.key} onValueChange={changeKey}>
               <SelectTrigger className="w-24 h-8"><SelectValue /></SelectTrigger>
               <SelectContent>{KEY_OPTIONS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
             </Select>
@@ -340,7 +350,6 @@ export default function ImprovSession({ scope, siblings, onSelect, onBack }: Pro
         siblings={siblings}
         onSelect={onSelect}
         onBack={onBack}
-        onChangeKey={(k) => setState(s => ({ ...s, key: k }))}
       />
     </div>
   );
