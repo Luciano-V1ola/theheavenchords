@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Music, Check, Circle } from "lucide-react";
 import { SITE_URL } from "@/lib/site";
+import PageMetadata from "@/components/PageMetadata";
 
 // Validación visual de contraseña (solo aplica en registro)
 function getPasswordChecks(pw: string) {
@@ -78,6 +79,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <PageMetadata section={mode === "signup" ? "Crear cuenta" : "Iniciar sesión"} path="/auth" noindex />
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">

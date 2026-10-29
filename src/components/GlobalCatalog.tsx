@@ -14,6 +14,7 @@ import SongFormFields, { SongFields, SongFont } from "./SongFormFields";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Membership } from "@/hooks/useChurch";
 import { friendlyError } from "@/lib/errors";
+import SongTitleLink from "./SongTitleLink";
 
 // Canción del catálogo global
 export type GlobalSong = {
@@ -258,7 +259,7 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-1 min-w-[180px]">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-semibold">{s.title}</h4>
+                  <h4 className="font-semibold"><SongTitleLink slug={s.slug} title={s.title} onOpen={() => onView(s)} /></h4>
                   {s.hidden && <Badge variant="destructive">Oculta</Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
