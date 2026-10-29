@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { noteIndex, renderLines } from "@/lib/chords";
+import { noteIndex, renderLines } from "../lib/chords";
 import type { SongFont } from "./SongFormFields";
 
 // Componente único de renderizado usado en:
