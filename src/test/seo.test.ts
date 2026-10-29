@@ -40,7 +40,8 @@ describe("public song metadata and indexing", () => {
     expect(html).not.toContain('href="/old"');
   });
   it("includes real song content and catalog discovery links before JavaScript", () => {
-    expect(songHtml(template, song)).toContain("Ahora ven");
+    const parsed = new DOMParser().parseFromString(songHtml(template, song), "text/html");
+    expect(parsed.querySelector("article")?.textContent).toContain("Ahora ven");
     expect(songHtml(template, song)).toContain("chord-line");
     expect(catalogHtml(template, [song])).toContain('href="/cancion/maranata-ahora-ven"');
     expect(catalogHtml(template, [{ ...song, hidden: true }])).not.toContain('href="/cancion/maranata-ahora-ven"');
