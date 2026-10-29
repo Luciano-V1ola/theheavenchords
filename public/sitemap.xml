@@ -78,6 +78,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://theheavenchords.xyz/cancion/maranata-ahora-ven</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://theheavenchords.xyz/cancion/cristo-la-pena-de-horeb</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -128,6 +134,12 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/toma-tu-lugar</loc>
     <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/ahi-viene-yeshua</loc>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -271,12 +283,6 @@
   </url>
   <url>
     <loc>https://theheavenchords.xyz/cancion/hermoso-dios</loc>
-    <lastmod>2026-06-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://theheavenchords.xyz/cancion/mirenlo</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -452,6 +458,18 @@
   <url>
     <loc>https://theheavenchords.xyz/cancion/generacion-que-danza</loc>
     <lastmod>2026-07-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/mirenlo-2</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://theheavenchords.xyz/cancion/siempre-que-me-mires</loc>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
