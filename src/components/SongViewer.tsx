@@ -162,7 +162,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
               <X className="w-4 h-4 mr-1" /> Salir
             </Button>
             <div className="flex-1 min-w-0">
-              <h2 className={`font-bold text-lg truncate ${fontClass}`}>{song.title}</h2>
+              <h1 className={`font-bold text-lg truncate ${fontClass}`}>{song.title}</h1>
             </div>
             <Button size="icon" variant="outline" onClick={() => transpose(-1)} title="Bajar tono"><Minus className="w-4 h-4" /></Button>
             <span className="text-sm w-10 text-center">{currentKey}</span>
@@ -229,7 +229,7 @@ export default function SongViewer({ song, onBack, onEdit, siblings, onSelect, d
         )}
 
         <div className="flex-1 min-w-0">
-          <h2 className={`font-bold text-xl sm:text-2xl truncate ${fontClass}`}>{song.title}</h2>
+          <h1 className={`font-bold text-xl sm:text-2xl truncate ${fontClass}`}>{song.title}</h1>
           {song.artist && <p className="text-sm text-muted-foreground truncate">{song.artist}</p>}
           {(song.bpm || song.time_signature) && (
             <div className="flex gap-3 mt-1 text-xs text-muted-foreground">

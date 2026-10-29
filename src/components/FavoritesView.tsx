@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import type { GlobalSong } from "./GlobalCatalog";
 import type { SongFont } from "./SongFormFields";
 import { friendlyError } from "@/lib/errors";
+import SongTitleLink from "./SongTitleLink";
 
 type Props = {
   onView: (s: GlobalSong) => void;
@@ -78,7 +79,7 @@ export default function FavoritesView({ onView }: Props) {
           className="p-4 flex items-center gap-3 flex-wrap cursor-pointer transition-colors hover:bg-accent/50 active:scale-[0.99]"
         >
           <div className="flex-1 min-w-[180px]">
-            <h4 className="font-semibold">{s.title}</h4>
+            <h4 className="font-semibold"><SongTitleLink slug={s.slug} title={s.title} onOpen={() => onView(s)} /></h4>
             <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
           </div>
           <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>

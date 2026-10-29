@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import PageMetadata from "@/components/PageMetadata";
+import { isPublicSong } from "@/lib/seo";
 import { useAuth } from "@/hooks/useAuth";
 import { useChurch } from "@/hooks/useChurch";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
@@ -87,6 +88,7 @@ export default function Index() {
   useEffect(() => {
     if (!routeSlug) {
       setSlugNotFound(false);
+      setSlugLoading(false);
       // Si volvimos a "/" (por ej. con la flecha Atrás), cerrar el visor.
       if (viewingGlobal) setViewingGlobal(null);
       return;
@@ -96,6 +98,7 @@ export default function Index() {
     if (viewingGlobal && currentSlug === routeSlug) return;
 
     let cancelled = false;
+    setViewingGlobal(null);
     setSlugLoading(true);
     setSlugNotFound(false);
     (async () => {
@@ -133,6 +136,8 @@ export default function Index() {
           .from("profiles").select("display_name").eq("user_id", (data as any).proposed_by).maybeSingle();
         contributor_name = prof?.display_name ?? null;
       }
+
+      if (cancelled) return;
 
       const song: CatalogViewerSong = {
         ...(data as any),
@@ -229,9 +234,17 @@ export default function Index() {
   };
 
   const canCreateChurch = !!user && !createdChurchId;
+  const sectionNames: Record<Tab, string | undefined> = { catalog: undefined, favorites: "Favoritos", lists: "Listas", review: "Revisión", settings: "Iglesia", global: "Global" };
+  const activeSong = routeSlug && viewingGlobal && (viewingGlobal.slug || slugify(viewingGlobal.title)) === routeSlug ? viewingGlobal : null;
+  const metadata = <PageMetadata
+    song={activeSong}
+    section={routeSlug ? (activeSong ? undefined : slugNotFound ? "Canción no encontrada" : "Canción") : openSetlist ? "Listas" : sectionNames[tab]}
+    path={location.pathname}
+    noindex={routeSlug ? !activeSong || !isPublicSong(activeSong) : !!openSetlist || tab !== "catalog" || params.has("invite")}
+  />;
 
   if (authLoading || chLoading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Cargando...</div>;
+    return <>{metadata}<div className="min-h-screen flex items-center justify-center text-muted-foreground">Cargando...</div></>;
   }
 
   // Botón de configuración: lleva a la pestaña settings de la iglesia actual.
@@ -249,6 +262,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-muted/20">
+      {metadata}
       <header className="sticky top-0 z-10 bg-background border-b">
         {/* Fila 1: título centrado y grande, con acciones en esquinas */}
         <div className="max-w-4xl mx-auto px-4 pt-3 pb-2 grid grid-cols-[auto_1fr_auto] items-center gap-2">
@@ -256,17 +270,17 @@ export default function Index() {
             {isAppOwner && <Crown className="w-4 h-4 text-primary" aria-label="Dueño" />}
             {isModerator && <Shield className="w-4 h-4 text-primary" aria-label="Moderador" />}
           </div>
-          <h1 className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <div className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
             <button
               type="button"
-              onClick={() => { setViewingGlobal(null); setOpenSetlist(null); navigate("/"); }}
+              onClick={() => { setViewingGlobal(null); setOpenSetlist(null); setTab("catalog"); navigate("/"); }}
               className="inline-flex items-center gap-2 justify-center hover:opacity-80 transition-opacity"
               aria-label="Volver al inicio"
             >
               <Music className="w-5 h-5 text-primary" />
               The Heaven Chords
             </button>
-          </h1>
+          </div>
 
           <div className="flex items-center gap-1 justify-end">
             {/* Engranaje único de configuración de iglesia */}
@@ -335,28 +349,6 @@ export default function Index() {
         ) : viewingGlobal ? (
           // Visor del CATÁLOGO. Independiente del visor de listas.
           <>
-            {(() => {
-              const url = siteUrl(songPath((viewingGlobal as any).slug, viewingGlobal.title));
-              const title = `${viewingGlobal.title} - Acordes, Letra, BPM, Compás y Transposición | The Heaven Chords`;
-              const description = `Acordes, letra, BPM, compás, tono y transposición de ${viewingGlobal.title}${viewingGlobal.artist ? ` de ${viewingGlobal.artist}` : ""} en The Heaven Chords.`;
-              return (
-                <Helmet>
-                  <html lang="es" />
-                  <title>{title}</title>
-                  <meta name="description" content={description} />
-                  <link rel="canonical" href={url} />
-                  <meta property="og:title" content={title} />
-                  <meta property="og:description" content={description} />
-                  <meta property="og:url" content={url} />
-                  <meta property="og:type" content="music.song" />
-                  <meta property="og:locale" content="es_ES" />
-                  <meta name="twitter:card" content="summary_large_image" />
-                  <meta name="twitter:title" content={title} />
-                  <meta name="twitter:description" content={description} />
-                  <meta name="twitter:url" content={url} />
-                </Helmet>
-              );
-            })()}
             <SongViewer
               key={`catalog-${viewingGlobal.id}`}
               song={{ ...viewingGlobal, source: "catalog" }}
