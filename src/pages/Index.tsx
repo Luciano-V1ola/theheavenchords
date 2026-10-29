@@ -270,7 +270,7 @@ export default function Index() {
             {isAppOwner && <Crown className="w-4 h-4 text-primary" aria-label="Dueño" />}
             {isModerator && <Shield className="w-4 h-4 text-primary" aria-label="Moderador" />}
           </div>
-          <h1 className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <div className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
             <button
               type="button"
               onClick={() => { setViewingGlobal(null); setOpenSetlist(null); setTab("catalog"); navigate("/"); }}
@@ -280,7 +280,7 @@ export default function Index() {
               <Music className="w-5 h-5 text-primary" />
               The Heaven Chords
             </button>
-          </h1>
+          </div>
 
           <div className="flex items-center gap-1 justify-end">
             {/* Engranaje único de configuración de iglesia */}

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { noteIndex, renderLines } from "../lib/chords";
 import type { SongFont } from "./SongFormFields";
 
