@@ -41,6 +41,7 @@ describe("public song metadata and indexing", () => {
   });
   it("includes real song content and catalog discovery links before JavaScript", () => {
     const parsed = new DOMParser().parseFromString(songHtml(template, song), "text/html");
+    parsed.querySelectorAll(".chord-line").forEach(chord => chord.remove());
     expect(parsed.querySelector("article")?.textContent).toContain("Ahora ven");
     expect(songHtml(template, song)).toContain("chord-line");
     expect(catalogHtml(template, [song])).toContain('href="/cancion/maranata-ahora-ven"');
