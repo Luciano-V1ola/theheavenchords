@@ -257,13 +257,13 @@ export default function GlobalCatalog({ church, onView, onAddToSetlist }: Props)
             className="p-4 cursor-pointer transition-colors hover:bg-accent/50 active:scale-[0.99]"
           >
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex-1 min-w-[180px]">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-semibold"><SongTitleLink slug={s.slug} title={s.title} onOpen={() => onView(s)} /></h4>
+              <SongTitleLink slug={s.slug} title={s.title} onOpen={() => onView(s)} className="block flex-1 min-w-[180px] self-stretch">
+                <span className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-semibold">{s.title}</h4>
                   {s.hidden && <Badge variant="destructive">Oculta</Badge>}
-                </div>
+                </span>
                 <p className="text-sm text-muted-foreground">{s.artist || "Sin artista"} · Tono: {s.song_key}</p>
-              </div>
+              </SongTitleLink>
               <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                 {user && (
                   <Button

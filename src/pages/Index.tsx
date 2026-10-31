@@ -271,15 +271,19 @@ export default function Index() {
             {isModerator && <Shield className="w-4 h-4 text-primary" aria-label="Moderador" />}
           </div>
           <div className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
-            <button
-              type="button"
-              onClick={() => { setViewingGlobal(null); setOpenSetlist(null); setTab("catalog"); navigate("/"); }}
+            <a
+              href="/"
+              onClick={(e) => {
+                if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                e.preventDefault();
+                setViewingGlobal(null); setOpenSetlist(null); setTab("catalog"); navigate("/");
+              }}
               className="inline-flex items-center gap-2 justify-center hover:opacity-80 transition-opacity"
               aria-label="Volver al inicio"
             >
               <Music className="w-5 h-5 text-primary" />
               The Heaven Chords
-            </button>
+            </a>
           </div>
 
           <div className="flex items-center gap-1 justify-end">
