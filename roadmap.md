@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Review every catalog artist, update only verified performers, and deliver the pending-song report.
+- [ ] Apply the artist-aware SEO title format to runtime and prerendered songs; verify regression tests.
+
 - [x] Correct route/section titles and stale metadata.
 - [x] Add native song-title links without breaking card actions.
 - [x] Unify public-song metadata, sitemap and static HTML using the existing renderer.

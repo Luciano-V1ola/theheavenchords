@@ -9,8 +9,9 @@ export function isPublicSong(song: SeoSong) {
 }
 
 export function songMetadata(song: SeoSong) {
+  const artist = song.artist?.trim();
   return {
-    title: `${song.title} - Letra y Acordes | The Heaven Chords`,
+    title: `${song.title}${artist ? ` - ${artist}` : ""} | Letra y Acordes - The Heaven Chords`,
     description: `Letra y acordes de ${song.title}${song.artist ? ` de ${song.artist}` : ""}. Consultá la canción y su tonalidad en The Heaven Chords.`,
     url: siteUrl(songPath(song.slug, song.title)),
   };

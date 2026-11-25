@@ -8,9 +8,20 @@ const template = '<html lang="es"><head><title>Old</title><meta name="descriptio
 
 describe("public song metadata and indexing", () => {
   it("uses the requested real-title format and official song canonical", () => {
-    expect(songMetadata(song).title).toBe("Maranata (Ahora Ven) - Letra y Acordes | The Heaven Chords");
+    expect(songMetadata(song).title).toBe("Maranata (Ahora Ven) | Letra y Acordes - The Heaven Chords");
     expect(songMetadata(song).url).toBe("https://theheavenchords.xyz/cancion/maranata-ahora-ven");
     expect(songMetadata({ ...song, slug: "nos-ama", title: "Nos Ama" }).url).toBe("https://theheavenchords.xyz/cancion/nos-ama");
+  });
+  it("generates the requested performer-aware title for existing and future songs", () => {
+    expect(songMetadata({ ...song, title: "Yo Te Amo", artist: "UPPERROOM" }).title).toBe("Yo Te Amo - UPPERROOM | Letra y Acordes - The Heaven Chords");
+    expect(songMetadata({ ...song, artist: "  " }).title).toBe("Maranata (Ahora Ven) | Letra y Acordes - The Heaven Chords");
+  });
+  it("uses identical performer-aware titles in initial HTML and Open Graph", () => {
+    const titled = { ...song, title: "Yo Te Amo", artist: "UPPERROOM" };
+    const parsed = new DOMParser().parseFromString(songHtml(template, titled), "text/html");
+    expect(parsed.title).toBe("Yo Te Amo - UPPERROOM | Letra y Acordes - The Heaven Chords");
+    expect(parsed.querySelector('meta[property="og:title"]')?.getAttribute("content")).toBe(parsed.title);
+    expect(parsed.querySelector("h1")?.textContent).toBe("Yo Te Amo");
   });
   it("restores home and names favorites/lists independently", () => {
     expect(sectionTitle()).toBe("The Heaven Chords");
